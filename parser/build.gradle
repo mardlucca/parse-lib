@@ -19,5 +19,7 @@
 apply plugin : 'java'
 
 dependencies {
+    implementation project(':tokenizer')
+    implementation 'org.apache.commons:commons-lang3:3.10'
     testImplementation 'junit:junit:4.12'
 }

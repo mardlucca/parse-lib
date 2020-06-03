@@ -1,7 +1,7 @@
 /*
- * File: settings.gradle
+ * File: ParsingException.java
  *
- * Copyright 2019 Marcio D. Lucca
+ * Copyright 2020 Marcio D. Lucca
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,6 +15,12 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+package mardlucca.parselib.parser;
 
-include ':tokenizer'
-include ':parser'
+public class ParsingException extends Exception
+{
+    public ParsingException(String message)
+    {
+        super(message);
+    }
+}

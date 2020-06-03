@@ -1,7 +1,7 @@
 /*
- * File: Sample.java
+ * File: MatchResult.java
  *
- * Copyright 2019 Marcio D. Lucca
+ * Copyright 2020 Marcio D. Lucca
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,16 +16,11 @@
  * limitations under the License.
  */
 
-/**
- * Sample class. Used mainly to properly structure the starter project on GitHub
- */
-public class Sample {
-    /**
-     * Returns the argument as-is
-     * @param aInString the argument
-     * @return the return value (which is the argument as-is)
-     */
-    public static String echo(String aInString) {
-        return aInString;
-    }
+package mardlucca.parselib.tokenizer;
+
+public enum MatchResult
+{
+    MATCH,
+    PARTIAL_MATCH,
+    NOT_A_MATCH
 }

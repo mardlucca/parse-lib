@@ -1,5 +1,5 @@
 /*
- * File: build.gradle
+ * File: TokenizerFactory.java
  *
  * Copyright 2020 Marcio D. Lucca
  *
@@ -15,9 +15,11 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+package mardlucca.parselib.tokenizer;
 
-apply plugin : 'java'
+import java.io.Reader;
 
-dependencies {
-    testImplementation 'junit:junit:4.12'
+public interface TokenizerFactory<T>
+{
+    Tokenizer<T> newTokenizer(Reader aInReader);
 }

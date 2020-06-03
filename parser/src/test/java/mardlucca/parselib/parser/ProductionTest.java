@@ -1,5 +1,5 @@
 /*
- * File: SampleTest.java
+ * File: ProductionTest.java
  *
  * Copyright 2020 Marcio D. Lucca
  *
@@ -16,8 +16,24 @@
  * limitations under the License.
  */
 
+package mardlucca.parselib.parser;
+
+import org.junit.Test;
+
 import static org.junit.Assert.*;
 
-public class SampleTest {
+public class ProductionTest
+{
+    @Test
+    public void testToString()
+    {
+        Production<String> lProduction = new Production<>(
+            "S'",
+            TestToken.IDENTIFIER,
+            TestToken.ASSIGNMENT,
+            TestToken.NUMBER);
+
+        assertEquals("S' -> id = num", lProduction.toString());
+    }
 
 }

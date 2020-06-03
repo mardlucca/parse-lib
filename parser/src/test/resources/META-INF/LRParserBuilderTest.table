@@ -1,0 +1,21 @@
+# This is a comment. The new lines are in the file on purpose
+
+ 	+	*	num	id	(	)	.	$	S'	S	M	F	DOT
+
+0	 	 	s4	s5	s6	 	 	 	 	1	2	3
+1	s7	 	 	 	 	 	 	acc
+2	r2	s8	 	 	 	r2	 	r2
+3	r4	r4	 	 	 	r4	 	r4
+4	r5	r5	 	 	 	r5	 	r5
+5	r9	r9	 	 	 	r9	s10	r9	 	 	 	 	9
+6	 	 	s4	s5	s6	 	 	e1	 	11	2	3
+7	 	 	s4	s5	s6	 	 	e1	 	 	12	3
+8	 	 	s4	s5	s6	 	 	e1	 	 	 	13
+9	r6	r6	 	 	 	r6	 	r6
+
+10	 	 	 	s14	 	 	 	e1
+11	s7	 	 	 	 	s15	 	e1
+12	r1	s8	 	 	 	r1	 	r1
+13	r3	r3	 	 	 	r3	 	r3
+14	r8	r8	 	 	 	r8	 	r8
+15	r7	r7	 	 	 	r7	 	r7

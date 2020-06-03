@@ -1,0 +1,14 @@
+# This is a comment. The new lines are here on purpose
+
+S' -> S
+
+S ->  S  +  M
+
+S -> M
+
+M -> M * F
+
+M -> F
+
+F -> @
+

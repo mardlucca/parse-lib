@@ -1,7 +1,7 @@
 /*
- * File: SampleTest.java
+ * File: TokenRecognizer.java
  *
- * Copyright 2019 Marcio D. Lucca
+ * Copyright 2020 Marcio D. Lucca
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,19 +16,23 @@
  * limitations under the License.
  */
 
-import org.junit.Test;
+package mardlucca.parselib.tokenizer;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNull;
+public interface TokenRecognizer<T>
+{
+    MatchResult test(int aInChar, Object aInSyntacticContext);
 
-/**
- * Unit test class for class {@link Sample}
- */
-public class SampleTest {
-
-    @Test
-    public void echo() {
-        assertNull(Sample.echo(null));
-        assertEquals("str", Sample.echo("str"));
+    default MatchResult test(int aInChar)
+    {
+        return test(aInChar, null);
     }
+
+    T getToken();
+
+    void reset();
+
+    Object getValue(String aInCharSequence);
+
+    String getFailureReason();
+
 }

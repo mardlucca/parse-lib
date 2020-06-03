@@ -1,5 +1,5 @@
 /*
- * File: Sample.java
+ * File: build.gradle
  *
  * Copyright 2020 Marcio D. Lucca
  *
@@ -16,16 +16,9 @@
  * limitations under the License.
  */
 
-/**
- * Sample class. Used mainly to properly structure the starter project on GitHub
- */
-public class Sample {
-    /**
-     * Returns the argument as-is
-     * @param aInString the argument
-     * @return the return value (which is the argument as-is)
-     */
-    public static String echo(String aInString) {
-        return aInString;
-    }
+apply plugin : 'java'
+
+dependencies {
+    implementation 'org.apache.commons:commons-text:1.8'
+    testImplementation 'junit:junit:4.12'
 }
