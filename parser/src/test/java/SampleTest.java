@@ -1,7 +1,7 @@
 /*
- * File: build.gradle
+ * File: SampleTest.java
  *
- * Copyright 2019 Marcio D. Lucca
+ * Copyright 2020 Marcio D. Lucca
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,8 +16,8 @@
  * limitations under the License.
  */
 
-apply plugin : 'java'
+import static org.junit.Assert.*;
 
-dependencies {
-    testImplementation 'junit:junit:4.12'
+public class SampleTest {
+
 }

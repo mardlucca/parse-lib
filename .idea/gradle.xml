@@ -10,7 +10,8 @@
         <option name="modules">
           <set>
             <option value="$PROJECT_DIR$" />
-            <option value="$PROJECT_DIR$/sample-project" />
+            <option value="$PROJECT_DIR$/lexer" />
+            <option value="$PROJECT_DIR$/parser" />
           </set>
         </option>
         <option name="useQualifiedModuleNames" value="true" />
