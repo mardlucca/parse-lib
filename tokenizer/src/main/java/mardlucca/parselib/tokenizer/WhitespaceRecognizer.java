@@ -18,7 +18,7 @@
 
 package mardlucca.parselib.tokenizer;
 
-public class WhitespaceRecognizer<T> extends BaseTokenRecognizer<T>
+public class WhitespaceRecognizer<T> extends BaseTokenRecognizer<T, String>
 {
     private boolean reading = true;
 
@@ -51,5 +51,15 @@ public class WhitespaceRecognizer<T> extends BaseTokenRecognizer<T>
     {
         super.reset();
         reading = true;
+    }
+
+    @Override
+    public String getValue(String aInCharSequence) {
+        return aInCharSequence;
+    }
+
+    @Override
+    public boolean isIgnored() {
+        return true;
     }
 }

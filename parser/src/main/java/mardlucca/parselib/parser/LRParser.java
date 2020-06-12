@@ -345,7 +345,7 @@ public class LRParser<T, NT>
         public boolean execute(ParseInvocation aInInvocation)
                 throws IOException, UnrecognizedCharacterSequenceException
         {
-            Token<T> lNextToken =
+            Token<T, ?> lNextToken =
                     aInInvocation.tokenizer.peekToken(
                             aInInvocation.currentState);
             if (Objects.equals(nextToken, lNextToken.getId()))
@@ -371,7 +371,7 @@ public class LRParser<T, NT>
 
         private State currentState;
 
-        private Token<T> currentToken;
+        private Token<T, ?> currentToken;
         
         private Tokenizer<T> tokenizer;
         
@@ -423,9 +423,9 @@ public class LRParser<T, NT>
 
     private static class Terminal<T> implements Symbol<T>
     {
-        private Token<T> value;
+        private Token<T, ?> value;
 
-        public Terminal(Token<T> aInValue)
+        public Terminal(Token<T, ?> aInValue)
         {
             value = aInValue;
         }
@@ -436,7 +436,7 @@ public class LRParser<T, NT>
         }
 
         @Override
-        public Token<T> getValue()
+        public Token<T, ?> getValue()
         {
             return value;
         }

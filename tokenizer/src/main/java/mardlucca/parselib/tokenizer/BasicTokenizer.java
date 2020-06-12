@@ -23,29 +23,28 @@ import java.io.Reader;
 import java.util.ArrayDeque;
 import java.util.ArrayList;
 import java.util.Deque;
-import java.util.HashMap;
 import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
-import java.util.Map;
 import java.util.Objects;
+import java.util.function.Function;
 import java.util.function.Supplier;
 import java.util.stream.Collectors;
 
 public class BasicTokenizer<T> implements Tokenizer<T>
 {
-    private List<TokenRecognizer<T>> recognizers;
+    private List<TokenRecognizer<T, ?>> recognizers;
 
     private Reader reader;
 
     private T endOfFile;
 
-    private Token<T> peekedToken;
+    private Token<T, ?> peekedToken;
 
-    Deque<Integer> buffer = new ArrayDeque<>();
+    private Deque<Integer> buffer = new ArrayDeque<>();
 
     private BasicTokenizer(
-            List<TokenRecognizer<T>> aInRecognizers,
+            List<TokenRecognizer<T, ?>> aInRecognizers,
             Reader aInReader,
             T aInEndOfFile)
     {
@@ -55,20 +54,20 @@ public class BasicTokenizer<T> implements Tokenizer<T>
     }
 
     @Override
-    public Token<T> nextToken(Object aInSyntacticContext)
+    public Token<T, ?> nextToken(Object aInSyntacticContext)
             throws IOException, UnrecognizedCharacterSequenceException
     {
         return nextToken(false, aInSyntacticContext);
     }
 
     @Override
-    public Token<T> peekToken(Object aInSyntacticContext)
+    public Token<T, ?> peekToken(Object aInSyntacticContext)
             throws IOException, UnrecognizedCharacterSequenceException
     {
         return nextToken(true, aInSyntacticContext);
     }
 
-    private Token<T> nextToken(boolean aInPeek, Object aInSyntacticContext)
+    private Token<T, ?> nextToken(boolean aInPeek, Object aInSyntacticContext)
         throws IOException, UnrecognizedCharacterSequenceException
     {
         if (peekedToken != null )
@@ -79,17 +78,17 @@ public class BasicTokenizer<T> implements Tokenizer<T>
                 return peekedToken;
             }
             // not peeking anymore, so we consume previously peeked token
-            Token<T> lToken = peekedToken;
+            Token<T, ?> lToken = peekedToken;
             peekedToken = null;
             return lToken;
         }
 
         // reset stuff
         recognizers.forEach(TokenRecognizer::reset);
-        List<TokenRecognizer<T>> lRecognizersLeft =
+        List<TokenRecognizer<T, ?>> lRecognizersLeft =
                 new LinkedList<>(recognizers);
-        TokenRecognizer<T> lCandidate = null;
-        TokenRecognizer<T> lPartialCandidate = null;
+        TokenRecognizer<T, ?> lCandidate = null;
+        TokenRecognizer<T, ?> lPartialCandidate = null;
         int lCandidateStringLength = 0;
         List<Integer> lCharactersRead = new ArrayList<>();
 
@@ -104,10 +103,10 @@ public class BasicTokenizer<T> implements Tokenizer<T>
 
             lCharactersRead.add(lCurrentCharacter);
 
-            for (Iterator<TokenRecognizer<T>> lIterator =
+            for (Iterator<TokenRecognizer<T, ?>> lIterator =
                 lRecognizersLeft.iterator(); lIterator.hasNext(); )
             {
-                TokenRecognizer<T> lRecognizer = lIterator.next();
+                TokenRecognizer<T, ?> lRecognizer = lIterator.next();
                 MatchResult lMatchResult = lRecognizer.test(
                         lCurrentCharacter, aInSyntacticContext);
                 if (lMatchResult == MatchResult.NOT_A_MATCH)
@@ -174,22 +173,21 @@ public class BasicTokenizer<T> implements Tokenizer<T>
                     lDetails);
         }
 
-        T lReturn = lCandidate.getToken();
-
-        if (lReturn == null)
+        if (lCandidate.isIgnored())
         {
-            // we found a white space sequence so we discard it and look again
+            // we found a candidate that must be discarded (e.g. white spaces,
+            // comments, etc). Discard it.
             return nextToken(aInPeek, aInSyntacticContext);
         }
 
-        String lToken = toString(lCharactersRead, lCandidateStringLength);
-        Token<T> lNewToken = new Token<>(lReturn, lToken,
-                lCandidate.getValue(lToken));
+        Token<T, ?> lToken = lCandidate.getToken(
+                toString(lCharactersRead, lCandidateStringLength));
+
         if (aInPeek)
         {
-            peekedToken = lNewToken;
+            peekedToken = lToken;
         }
-        return lNewToken;
+        return lToken;
     }
 
     private int nextChar() throws IOException
@@ -212,81 +210,13 @@ public class BasicTokenizer<T> implements Tokenizer<T>
 
     public static class Builder<T>
     {
-        private T characterLiterals;
-
-        private T identifiers;
-
-        private T numberLiterals;
-
-        private Map<Character, T> stringLiterals = new HashMap<>();
-
         private T endOfFile;
 
-        private Map<String, T> keywords = new HashMap<>();
-
-        private Map<String, T> symbols = new HashMap<>();
-
-        private String singleLineComments;
-
-        private String multiLineCommentsStart;
-
-        private String multiLineCommentsEnd;
-
-        private List<Supplier<TokenRecognizer<T>>> custom = new ArrayList<>();
+        private List<Supplier<? extends TokenRecognizer<T, ?>>> custom =
+                new ArrayList<>();
 
         public Builder()
         {
-        }
-
-        public Builder<T> characterLiterals(T aInToken)
-        {
-            characterLiterals = aInToken;
-            return this;
-        }
-
-        public Builder<T> identifiers(T aInToken)
-        {
-            identifiers = aInToken;
-            return this;
-        }
-
-        public Builder<T> numberLiterals(T aInToken)
-        {
-            numberLiterals = aInToken;
-            return this;
-        }
-
-        public Builder<T> stringLiterals(T aInToken)
-        {
-            return stringLiterals(aInToken, '"');
-        }
-
-        public Builder<T> stringLiterals(T aInToken, char aInDelimiterChar)
-        {
-            stringLiterals.put(aInDelimiterChar, aInToken);
-            return this;
-        }
-
-        public Builder<T> keyword(T aInToken)
-        {
-            return keyword(aInToken.toString(), aInToken);
-        }
-
-        public Builder<T> keyword(String aInKeyword, T aInToken)
-        {
-            keywords.put(aInKeyword, aInToken);
-            return this;
-        }
-
-        public Builder<T> symbol(T aInToken)
-        {
-            return symbol(aInToken.toString(), aInToken);
-        }
-
-        public Builder<T> symbol(String aInSymbol, T aInToken)
-        {
-            symbols.put(aInSymbol, aInToken);
-            return this;
         }
 
         public Builder<T> endOfFile(T aInToken)
@@ -295,35 +225,21 @@ public class BasicTokenizer<T> implements Tokenizer<T>
             return this;
         }
 
-        public Builder<T> singleLineComments(String aInSingleLineComments)
-        {
-            singleLineComments = aInSingleLineComments == null
-                    ? SingleLineCommentRecognizer.DEFAULT_CHAR_SEQUENCE
-                    : aInSingleLineComments;
-            return this;
-        }
-
-        public Builder<T> multiLineComments(String aInMultiLineCommentsStart)
-        {
-            multiLineCommentsStart = aInMultiLineCommentsStart == null
-                    ? MultiLineCommentRecognizer.DEFAULT_START_CHAR_SEQUENCE
-                    : aInMultiLineCommentsStart;
-            return this;
-        }
-
-        public Builder<T> multiLineComments(String aInMultiLineCommentsStart,
-                String aInMultiLineCommentsEnd)
-        {
-            multiLineCommentsStart = aInMultiLineCommentsStart;
-            multiLineCommentsEnd = aInMultiLineCommentsEnd;
-            return this;
-        }
-
-        public Builder<T> recognizer(Supplier<TokenRecognizer<T>>
-                aInRecognizerSupplier)
+        public <V> Builder<T> recognize(
+                Supplier<? extends TokenRecognizer<T, V>> aInRecognizerSupplier)
         {
             custom.add(aInRecognizerSupplier);
             return this;
+        }
+
+        public <V> Builder<T> recognize(
+                Supplier<? extends TokenRecognizer<T, V>> aInRecognizerSupplier,
+                Function<? super V, ?> aInTransform)
+        {
+            return recognize(
+                    () -> new TransformingRecognizer<>(
+                            aInRecognizerSupplier.get(),
+                            aInTransform));
         }
 
         public BasicTokenizer<T> build(Reader aInReader)
@@ -334,66 +250,21 @@ public class BasicTokenizer<T> implements Tokenizer<T>
                     "End of file token must be specified");
             }
 
-            List<TokenRecognizer<T>> lRecognizers = new ArrayList<>();
-            lRecognizers.addAll(
-                    custom.stream().map(Supplier::get).collect(
-                            Collectors.toList()));
-
-            if (singleLineComments != null)
-            {
-                lRecognizers.add(
-                        new SingleLineCommentRecognizer<>(singleLineComments));
-            }
-            if (multiLineCommentsStart != null)
-            {
-                lRecognizers.add(
-                        new MultiLineCommentRecognizer<>(
-                                multiLineCommentsStart, multiLineCommentsEnd));
-            }
-
-            symbols.forEach((aInSymbol, aInToken) ->
-                lRecognizers.add(
-                    new SymbolRecognizer<>(aInSymbol, aInToken)));
-
-            if (characterLiterals != null)
-            {
-                lRecognizers.add(
-                    new CharacterLiteralRecognizer<>(characterLiterals));
-            }
-
-            stringLiterals.forEach((aInChar, aInToken) ->
-                    lRecognizers.add(new StringLiteralRecognizer<>(
-                            aInToken, aInChar)));
-
-            if (numberLiterals != null)
-            {
-                lRecognizers.add(
-                        new NumberLiteralRecognizer<>(numberLiterals));
-            }
-
-            keywords.forEach((aInKeyword, aInToken) ->
-                    lRecognizers.add(
-                            new SymbolRecognizer<>(aInKeyword, aInToken))
-            );
-
-            if (identifiers != null)
-            {
-                lRecognizers.add(
-                    new IdentifierRecognizer<>(identifiers));
-            }
-
-            lRecognizers.add(new WhitespaceRecognizer<>());
+            custom.add(WhitespaceRecognizer::new);
+            List<TokenRecognizer<T, ?>> lRecognizers =
+                    custom.stream().map(Supplier::get)
+                            .collect(Collectors.toList());
 
             return new BasicTokenizer<>(lRecognizers, aInReader, endOfFile);
         }
     }
 
     @Override
-    public Iterator<Token<T>> iterator()
+    public Iterator<Token<T, ?>> iterator()
     {
-        return new Iterator<Token<T>>()
+        return new Iterator<Token<T, ?>>()
         {
-            Token<T> next;
+            Token<T, ?> next;
 
             boolean reachedTheEnd = false;
 
@@ -427,9 +298,9 @@ public class BasicTokenizer<T> implements Tokenizer<T>
             }
 
             @Override
-            public Token<T> next()
+            public Token<T, ?> next()
             {
-                Token<T> lNext = next;
+                Token<T, ?> lNext = next;
                 next = null;
                 return lNext;
             }

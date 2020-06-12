@@ -22,7 +22,7 @@ import org.apache.commons.text.StringEscapeUtils;
 
 import java.util.Arrays;
 
-public class StringLiteralRecognizer<T> extends BaseTokenRecognizer<T>
+public class StringLiteralRecognizer<T> extends BaseTokenRecognizer<T, String>
 {
     private static final char DEFAULT_ESCAPE_CHARACTER = '\\';
 
@@ -135,7 +135,7 @@ public class StringLiteralRecognizer<T> extends BaseTokenRecognizer<T>
     }
 
     @Override
-    public Object getValue(String aInCharSequence)
+    public String getValue(String aInCharSequence)
     {
         if (aInCharSequence.length() < 3)
         {

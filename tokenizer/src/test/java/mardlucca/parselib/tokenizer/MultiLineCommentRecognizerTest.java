@@ -30,7 +30,7 @@ import static org.junit.Assert.*;
 public class MultiLineCommentRecognizerTest
 {
     private static MultiLineCommentRecognizer recognizer =
-            new MultiLineCommentRecognizer();
+            new MultiLineCommentRecognizer(null, null);
 
     @Test
     public void testSuccessCases()

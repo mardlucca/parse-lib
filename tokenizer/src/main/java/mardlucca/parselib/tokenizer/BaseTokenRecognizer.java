@@ -18,7 +18,7 @@
 
 package mardlucca.parselib.tokenizer;
 
-public abstract class BaseTokenRecognizer<T> implements TokenRecognizer<T>
+public abstract class BaseTokenRecognizer<T, V> implements TokenRecognizer<T, V>
 {
     private T token;
 
@@ -30,15 +30,9 @@ public abstract class BaseTokenRecognizer<T> implements TokenRecognizer<T>
     }
 
     @Override
-    public T getToken()
+    public Token<T, V> getToken(String aInCharSequence)
     {
-        return token;
-    }
-
-    @Override
-    public Object getValue(String aInCharSequence)
-    {
-        return aInCharSequence;
+        return new Token<>(token, aInCharSequence, getValue(aInCharSequence));
     }
 
     @Override
@@ -56,5 +50,12 @@ public abstract class BaseTokenRecognizer<T> implements TokenRecognizer<T>
     public void reset()
     {
         failureReason = null;
+    }
+
+    protected abstract V getValue(String aInCharSequence);
+
+    @Override
+    public boolean isIgnored() {
+        return false;
     }
 }

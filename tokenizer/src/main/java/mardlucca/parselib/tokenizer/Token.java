@@ -18,15 +18,15 @@
 
 package mardlucca.parselib.tokenizer;
 
-public class Token<T>
+public class Token<T, V>
 {
     private T id;
 
     private String charSequence;
 
-    private Object value;
+    private V value;
 
-    public Token(T aInId, String aInCharSequence, Object aInValue)
+    Token(T aInId, String aInCharSequence, V aInValue)
     {
         id = aInId;
         charSequence = aInCharSequence;
@@ -43,7 +43,7 @@ public class Token<T>
         return charSequence;
     }
 
-    public Object getValue()
+    public V getValue()
     {
         return value;
     }

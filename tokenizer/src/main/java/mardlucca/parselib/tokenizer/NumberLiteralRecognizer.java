@@ -18,7 +18,7 @@
 
 package mardlucca.parselib.tokenizer;
 
-public class NumberLiteralRecognizer<T> extends BaseTokenRecognizer<T>
+public class NumberLiteralRecognizer<T> extends BaseTokenRecognizer<T, Number>
 {
     private State state = State.INITIAL;
 
@@ -41,7 +41,7 @@ public class NumberLiteralRecognizer<T> extends BaseTokenRecognizer<T>
     }
 
     @Override
-    public Object getValue(String aInCharSequence)
+    public Number getValue(String aInCharSequence)
     {
         if (type == int.class)
         {
@@ -77,11 +77,11 @@ public class NumberLiteralRecognizer<T> extends BaseTokenRecognizer<T>
             case FIRST_CHAR_WAS_A_ZERO:
                 return handleFirstCharWasAZeroState(aInChar);
             case FLOATING_POINT_NUMBER_WITHOUT_EXPONENT:
-                return handleFloatingPointNumberWithouthExponentState(aInChar);
+                return handleFloatingPointNumberWithoutExponentState(aInChar);
             case NEED_EXPONENT_VALUE:
                 return handleNeedExponentValueState(aInChar);
-            case FIRST_EXPONENT_CHARACTER_WAS_A_NEGATIVE:
-                return handleFirstExponentCharacterWasANegative(aInChar);
+            case FIRST_EXPONENT_CHARACTER_WAS_A_SIGN:
+                return handleFirstExponentCharacterWasASign(aInChar);
             case FLOATING_POINT_NUMBER_WITH_EXPONENT:
                 return handleFloatingPointNumberWithExponent(aInChar);
             case OCTAL_NUMBER:
@@ -98,7 +98,7 @@ public class NumberLiteralRecognizer<T> extends BaseTokenRecognizer<T>
                 return handleFloatSuffixState(aInChar);
             case DOUBLE_SUFFIX:
                 return handleDoubleSuffixState(aInChar);
-         }
+        }
 
         return MatchResult.NOT_A_MATCH;
     }
@@ -131,18 +131,19 @@ public class NumberLiteralRecognizer<T> extends BaseTokenRecognizer<T>
         {
             return MatchResult.MATCH;
         }
-        if (aInChar == 'd')
+        if (aInChar == 'd' || aInChar == 'D')
         {
+            type = double.class;
             state = State.DOUBLE_SUFFIX;
             return MatchResult.MATCH;
         }
-        if (aInChar == 'f')
+        if (aInChar == 'f' || aInChar == 'F')
         {
             type = float.class;
             state = State.FLOAT_SUFFIX;
             return MatchResult.MATCH;
         }
-        if (aInChar == 'l')
+        if (aInChar == 'l' || aInChar == 'L')
         {
             type = long.class;
             state = State.LONG_SUFFIX;
@@ -154,8 +155,9 @@ public class NumberLiteralRecognizer<T> extends BaseTokenRecognizer<T>
             state = State.FLOATING_POINT_NUMBER_WITHOUT_EXPONENT;
             return MatchResult.MATCH;
         }
-        if (aInChar == 'e')
+        if (aInChar == 'e' || aInChar == 'E')
         {
+            type = double.class;
             state = State.NEED_EXPONENT_VALUE;
             return MatchResult.PARTIAL_MATCH;
         }
@@ -174,25 +176,25 @@ public class NumberLiteralRecognizer<T> extends BaseTokenRecognizer<T>
         return setNotAMatch("Floating point number missing decimal value");
     }
 
-    private MatchResult handleFloatingPointNumberWithouthExponentState(
+    private MatchResult handleFloatingPointNumberWithoutExponentState(
         int aInChar)
     {
         if (isDigit(aInChar))
         {
             return MatchResult.MATCH;
         }
-        if (aInChar == 'e')
+        if (aInChar == 'e' || aInChar == 'E')
         {
             state = State.NEED_EXPONENT_VALUE;
             return MatchResult.PARTIAL_MATCH;
         }
-        if (aInChar == 'f')
+        if (aInChar == 'f' || aInChar == 'F')
         {
             type = float.class;
             state = State.FLOAT_SUFFIX;
             return MatchResult.MATCH;
         }
-        if (aInChar == 'd')
+        if (aInChar == 'd' || aInChar == 'D')
         {
             state = State.DOUBLE_SUFFIX;
             return MatchResult.MATCH;
@@ -208,16 +210,16 @@ public class NumberLiteralRecognizer<T> extends BaseTokenRecognizer<T>
             state = State.FLOATING_POINT_NUMBER_WITH_EXPONENT;
             return MatchResult.MATCH;
         }
-        if (aInChar == '-')
+        if (aInChar == '-' || aInChar == '+')
         {
-            state = State.FIRST_EXPONENT_CHARACTER_WAS_A_NEGATIVE;
+            state = State.FIRST_EXPONENT_CHARACTER_WAS_A_SIGN;
             return MatchResult.PARTIAL_MATCH;
         }
         return setNotAMatch("Malformed floating point literal");
     }
 
 
-    private MatchResult handleFirstExponentCharacterWasANegative(
+    private MatchResult handleFirstExponentCharacterWasASign(
         int aInChar)
     {
         if (isDigit(aInChar))
@@ -231,13 +233,13 @@ public class NumberLiteralRecognizer<T> extends BaseTokenRecognizer<T>
     private MatchResult handleFloatingPointNumberWithExponent(
         int aInChar)
     {
-        if (aInChar == 'f')
+        if (aInChar == 'f' || aInChar == 'F')
         {
             type = float.class;
             state = State.FLOAT_SUFFIX;
             return MatchResult.MATCH;
         }
-        if (aInChar == 'd')
+        if (aInChar == 'd' || aInChar == 'D')
         {
             state = State.DOUBLE_SUFFIX;
             return MatchResult.MATCH;
@@ -259,8 +261,9 @@ public class NumberLiteralRecognizer<T> extends BaseTokenRecognizer<T>
             state = State.NEED_HEXADECIMAL_VALUE;
             return MatchResult.PARTIAL_MATCH;
         }
-        if (aInChar == 'e')
+        if (aInChar == 'e' || aInChar == 'E')
         {
+            type = double.class;
             state = State.NEED_EXPONENT_VALUE;
             return MatchResult.PARTIAL_MATCH;
         }
@@ -275,18 +278,19 @@ public class NumberLiteralRecognizer<T> extends BaseTokenRecognizer<T>
             state = State.INVALID_OCTAL_MAY_STILL_BE_FLOATING_POINT;
             return MatchResult.PARTIAL_MATCH;
         }
-        if (aInChar == 'd')
+        if (aInChar == 'd' || aInChar == 'D')
         {
+            type = double.class;
             state = State.DOUBLE_SUFFIX;
             return MatchResult.MATCH;
         }
-        if (aInChar == 'f')
+        if (aInChar == 'f' || aInChar == 'F')
         {
             type = float.class;
             state = State.FLOAT_SUFFIX;
             return MatchResult.MATCH;
         }
-        if (aInChar == 'l')
+        if (aInChar == 'l' || aInChar == 'L')
         {
             type = long.class;
             state = State.LONG_SUFFIX;
@@ -313,25 +317,27 @@ public class NumberLiteralRecognizer<T> extends BaseTokenRecognizer<T>
             state = State.INVALID_OCTAL_MAY_STILL_BE_FLOATING_POINT;
             return MatchResult.PARTIAL_MATCH;
         }
-        if (aInChar == 'd')
+        if (aInChar == 'd' || aInChar == 'D')
         {
+            type = double.class;
             state = State.DOUBLE_SUFFIX;
             return MatchResult.MATCH;
         }
-        if (aInChar == 'f')
+        if (aInChar == 'f' || aInChar == 'F')
         {
             type = float.class;
             state = State.FLOAT_SUFFIX;
             return MatchResult.MATCH;
         }
-        if (aInChar == 'l')
+        if (aInChar == 'l' || aInChar == 'L')
         {
             type = long.class;
             state = State.LONG_SUFFIX;
             return MatchResult.MATCH;
         }
-        if (aInChar == 'e')
+        if (aInChar == 'e' || aInChar == 'E')
         {
+            type = double.class;
             state = State.NEED_EXPONENT_VALUE;
             return MatchResult.PARTIAL_MATCH;
         }
@@ -351,17 +357,19 @@ public class NumberLiteralRecognizer<T> extends BaseTokenRecognizer<T>
             state = State.FLOATING_POINT_NUMBER_WITHOUT_EXPONENT;
             return MatchResult.MATCH;
         }
-        if (aInChar == 'e')
+        if (aInChar == 'e' || aInChar == 'E')
         {
+            type = double.class;
             state = State.NEED_EXPONENT_VALUE;
             return MatchResult.PARTIAL_MATCH;
         }
-        if (aInChar == 'd')
+        if (aInChar == 'd' || aInChar == 'D')
         {
+            type = double.class;
             state = State.DOUBLE_SUFFIX;
             return MatchResult.MATCH;
         }
-        if (aInChar == 'f')
+        if (aInChar == 'f' || aInChar == 'F')
         {
             type = float.class;
             state = State.FLOAT_SUFFIX;
@@ -390,7 +398,7 @@ public class NumberLiteralRecognizer<T> extends BaseTokenRecognizer<T>
         {
             return MatchResult.MATCH;
         }
-        if (aInChar == 'l')
+        if (aInChar == 'l' || aInChar == 'L')
         {
             type = long.class;
             state = State.LONG_SUFFIX;
@@ -452,7 +460,7 @@ public class NumberLiteralRecognizer<T> extends BaseTokenRecognizer<T>
         FIRST_CHAR_WAS_A_ZERO,
         FLOATING_POINT_NUMBER_WITHOUT_EXPONENT,
         NEED_EXPONENT_VALUE,
-        FIRST_EXPONENT_CHARACTER_WAS_A_NEGATIVE,
+        FIRST_EXPONENT_CHARACTER_WAS_A_SIGN,
         FLOATING_POINT_NUMBER_WITH_EXPONENT,
         OCTAL_NUMBER,
         INVALID_OCTAL_MAY_STILL_BE_FLOATING_POINT,

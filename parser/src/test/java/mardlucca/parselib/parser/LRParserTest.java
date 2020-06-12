@@ -31,6 +31,7 @@ import java.util.List;
 import java.util.Map;
 
 import static java.util.Arrays.asList;
+import static mardlucca.parselib.tokenizer.Recognizers.*;
 import static org.junit.Assert.*;
 
 public class LRParserTest
@@ -41,9 +42,9 @@ public class LRParserTest
     public static void setUp()
     {
         builder = new BasicTokenizer.Builder<TestToken>()
-            .identifiers(TestToken.IDENTIFIER)
-            .numberLiterals(TestToken.NUMBER)
-            .symbol("=", TestToken.ASSIGNMENT)
+            .recognize(identifiers(TestToken.IDENTIFIER))
+            .recognize(numbers(TestToken.NUMBER))
+            .recognize(symbol("=", TestToken.ASSIGNMENT))
             .endOfFile(TestToken.EOF);
     }
 
@@ -204,7 +205,7 @@ public class LRParserTest
                             ((aInProduction, aInValues) ->
                     {
                         String lVariable = (String)
-                                ((Token<TestToken>)aInValues[0]).getValue();
+                                ((Token<TestToken, ?>)aInValues[0]).getValue();
                         Object lValue = aInValues[1];
                         if (lValue != null)
                         {
@@ -220,7 +221,7 @@ public class LRParserTest
                     .onReduce(4, ((aInProduction, aInValues) ->
                     {
                         String lVariable = (String)
-                                ((Token<TestToken>)aInValues[0]).getValue();
+                                ((Token<TestToken, ?>)aInValues[0]).getValue();
                         Object lValue = aInVariables.get(lVariable);
                         if (lValue == null)
                         {
@@ -229,7 +230,7 @@ public class LRParserTest
                         return lValue;
                     }))
                     .onReduce(5, ((aInProduction, aInValues) ->
-                            ((Token<TestToken>)aInValues[0]).getValue()))
+                            ((Token<TestToken, ?>)aInValues[0]).getValue()))
                     .build();
         }
     }

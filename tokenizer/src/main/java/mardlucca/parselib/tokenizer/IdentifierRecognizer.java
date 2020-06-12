@@ -18,7 +18,7 @@
 
 package mardlucca.parselib.tokenizer;
 
-public class IdentifierRecognizer<T> extends BaseTokenRecognizer<T>
+public class IdentifierRecognizer<T> extends BaseTokenRecognizer<T, String>
 {
     private int index = -1;
 
@@ -64,5 +64,10 @@ public class IdentifierRecognizer<T> extends BaseTokenRecognizer<T>
         super.reset();
         index = -1;
         matchFailure = false;
+    }
+
+    @Override
+    public String getValue(String aInCharSequence) {
+        return aInCharSequence;
     }
 }

@@ -29,7 +29,7 @@ import static org.junit.Assert.*;
 public class CharacterLiteralRecognizerTest
 {
     private static CharacterLiteralRecognizer recognizer =
-        new CharacterLiteralRecognizer("C");
+        Recognizers.characters("C").get();
 
     @Test
     public void testSuccessCases()
@@ -96,8 +96,8 @@ public class CharacterLiteralRecognizerTest
     @Test
     public void testGetValue()
     {
-        assertEquals('a', recognizer.getValue("'a'"));
-        assertEquals('\n', recognizer.getValue("'\\n'"));
+        assertEquals('a', recognizer.getToken("'a'").getValue());
+        assertEquals('\n', recognizer.getToken("'\\n'").getValue());
     }
 
     private void test(String aInString, MatchResult ... aInResults)

@@ -27,6 +27,7 @@ import java.io.StringReader;
 import java.util.ArrayList;
 import java.util.List;
 
+import static mardlucca.parselib.tokenizer.Recognizers.*;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
@@ -39,19 +40,19 @@ public class BasicTokenizerTest
     public void setUp()
     {
         builder = new BasicTokenizer.Builder<TestToken>()
-                .singleLineComments(null)
-                .multiLineComments(null)
-                .characterLiterals(TestToken.CHARACTER)
-                .keyword("if", TestToken.IF)
-                .keyword("for", TestToken.FOR)
-                .numberLiterals(TestToken.NUMBER)
-                .stringLiterals(TestToken.STRING)
-                .symbol("==", TestToken.EQUALS)
-                .symbol("=", TestToken.ASSIGNMENT)
-                .symbol("(", TestToken.OPEN_PARENTHESIS)
-                .symbol(")", TestToken.CLOSE_PARENTHESIS)
-                .symbol("/", TestToken.SLASH)
-                .identifiers(TestToken.IDENTIFIER)
+                .recognize(singleLineComments())
+                .recognize(multiLineComments())
+                .recognize(characters(TestToken.CHARACTER))
+                .recognize(symbol("if", TestToken.IF))
+                .recognize(symbol("for", TestToken.FOR))
+                .recognize(numbers(TestToken.NUMBER))
+                .recognize(strings(TestToken.STRING))
+                .recognize(symbol("==", TestToken.EQUALS))
+                .recognize(symbol("=", TestToken.ASSIGNMENT))
+                .recognize(symbol("(", TestToken.OPEN_PARENTHESIS))
+                .recognize(symbol(")", TestToken.CLOSE_PARENTHESIS))
+                .recognize(symbol("/", TestToken.SLASH))
+                .recognize(identifiers(TestToken.IDENTIFIER))
                 .endOfFile(TestToken.EOF);
     }
 
@@ -89,7 +90,7 @@ public class BasicTokenizerTest
         assertEquals(TestToken.EOF, lTokenizer.nextToken().getId());
     }
 
-    private void test(Token<TestToken> aInToken, TestToken aInTokenId,
+    private void test(Token<TestToken,?> aInToken, TestToken aInTokenId,
         String aInCharSequence, Object aInValue, Class<?> aInType)
     {
         assertEquals(aInTokenId, aInToken.getId());
@@ -115,7 +116,7 @@ public class BasicTokenizerTest
                 "i", "i", String.class);
         test(lTokenizer.nextToken(), TestToken.IDENTIFIER,
             "i", "i", String.class);
-        Token<TestToken> lEOF = lTokenizer.nextToken();
+        Token<TestToken,?> lEOF = lTokenizer.nextToken();
         assertNotNull(lEOF);
         assertEquals(TestToken.EOF, lEOF.getId());
     }
@@ -125,7 +126,7 @@ public class BasicTokenizerTest
     {
         Reader lReader =
             new StringReader(".a .3 13.fb");
-        builder.symbol(".", TestToken.PERIOD);
+        builder.recognize(symbol(".", TestToken.PERIOD));
         BasicTokenizer<TestToken> lTokenizer = builder.build(lReader);
 
         test(lTokenizer.nextToken(), TestToken.PERIOD,
@@ -235,9 +236,9 @@ public class BasicTokenizerTest
             throws IOException, UnrecognizedCharacterSequenceException
     {
         builder = new BasicTokenizer.Builder<TestToken>()
-                .stringLiterals(TestToken.STRING, '/')
-                .symbol(TestToken.SLASH)
-                .identifiers(TestToken.IDENTIFIER)
+                .recognize(strings(TestToken.STRING, '/'))
+                .recognize(symbol(TestToken.SLASH))
+                .recognize(identifiers(TestToken.IDENTIFIER))
                 .endOfFile(TestToken.EOF);
 
         Reader lReader = new StringReader("/regexp/ a/ba ");
@@ -259,7 +260,7 @@ public class BasicTokenizerTest
             throws IOException, UnrecognizedCharacterSequenceException
     {
         builder = new BasicTokenizer.Builder<TestToken>()
-                .recognizer(() ->
+                .recognize(() ->
                         new IdentifierRecognizer<>(TestToken.IDENTIFIER))
                 .endOfFile(TestToken.EOF);
         Reader lReader = new StringReader("ba ");

@@ -25,7 +25,7 @@ import static org.junit.Assert.*;
 public class SingleLineCommentRecognizerTest
 {
     private static SingleLineCommentRecognizer recognizer =
-            new SingleLineCommentRecognizer();
+            new SingleLineCommentRecognizer(null);
 
     @Test
     public void testSuccessCases()

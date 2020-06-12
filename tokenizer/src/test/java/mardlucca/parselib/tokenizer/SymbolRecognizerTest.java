@@ -18,6 +18,7 @@
 
 package mardlucca.parselib.tokenizer;
 
+import com.sun.org.apache.regexp.internal.RE;
 import org.junit.Test;
 
 import static org.junit.Assert.*;
@@ -28,13 +29,13 @@ public class SymbolRecognizerTest
     @Test
     public void testSuccess() throws Exception
     {
-        SymbolRecognizer lRecognizer = new SymbolRecognizer("<");
+        SymbolRecognizer lRecognizer = Recognizers.symbol("<").get();
         test(lRecognizer, "<x", MatchResult.MATCH, MatchResult.NOT_A_MATCH);
         lRecognizer.reset();
         test(lRecognizer, ">x", MatchResult.NOT_A_MATCH,
             MatchResult.NOT_A_MATCH);
 
-        lRecognizer = new SymbolRecognizer("if");
+        lRecognizer = Recognizers.symbol("if").get();
         test(lRecognizer, "ifx", MatchResult.PARTIAL_MATCH, MatchResult.MATCH,
             MatchResult.NOT_A_MATCH);
         lRecognizer.reset();
@@ -43,23 +44,9 @@ public class SymbolRecognizerTest
     }
 
     @Test
-    public void testInvalidPredicate()
-    {
-        try
-        {
-            new SymbolRecognizer("<", aInSymbol -> false, "<");
-            fail("Should have thrown exception");
-        }
-        catch (RuntimeException e)
-        {
-            assertEquals("Invalid symbol \"<\"", e.getMessage());
-        }
-    }
-
-    @Test
     public void testGetValue()
     {
-        SymbolRecognizer lRecognizer = new SymbolRecognizer("<");
+        SymbolRecognizer lRecognizer = Recognizers.symbol("<").get();
         assertEquals("<", lRecognizer.getValue("<"));
     }
 

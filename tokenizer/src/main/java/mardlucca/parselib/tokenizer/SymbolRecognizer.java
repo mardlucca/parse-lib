@@ -20,7 +20,7 @@ package mardlucca.parselib.tokenizer;
 
 import java.util.function.Predicate;
 
-public class SymbolRecognizer<T> extends BaseTokenRecognizer<T>
+public class SymbolRecognizer<T> extends BaseTokenRecognizer<T, String>
 {
     private String value;
 
@@ -28,26 +28,14 @@ public class SymbolRecognizer<T> extends BaseTokenRecognizer<T>
 
     private boolean notAMatch = false;
 
-    public SymbolRecognizer(T aInToken)
-    {
-        this(aInToken.toString(), null, aInToken);
-    }
-
     public SymbolRecognizer(String aInValue, T aInToken)
     {
-        this(aInValue, null, aInToken);
-    }
-
-    public SymbolRecognizer(
-        String aInValue,
-        Predicate<String> aInValidator,
-        T aInToken)
-    {
         super(aInToken);
-        if (aInValidator != null && !aInValidator.test(aInValue))
+        if (aInValue == null)
         {
-            throw new RuntimeException("Invalid symbol \"" + aInValue + '"');
+            aInValue = aInToken.toString();
         }
+
         value = aInValue;
     }
 
@@ -78,5 +66,10 @@ public class SymbolRecognizer<T> extends BaseTokenRecognizer<T>
         super.reset();
         index = 0;
         notAMatch = false;
+    }
+
+    @Override
+    public String getValue(String aInCharSequence) {
+        return aInCharSequence;
     }
 }

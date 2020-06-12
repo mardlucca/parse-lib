@@ -18,7 +18,7 @@
 
 package mardlucca.parselib.tokenizer;
 
-public interface TokenRecognizer<T>
+public interface TokenRecognizer<T, V>
 {
     MatchResult test(int aInChar, Object aInSyntacticContext);
 
@@ -27,12 +27,11 @@ public interface TokenRecognizer<T>
         return test(aInChar, null);
     }
 
-    T getToken();
+    Token<T, V> getToken(String aInCharSequence);
 
     void reset();
 
-    Object getValue(String aInCharSequence);
-
     String getFailureReason();
 
+    boolean isIgnored();
 }

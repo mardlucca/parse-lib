@@ -230,6 +230,20 @@ public class NumberLiteralRecognizerTest
             MatchResult.PARTIAL_MATCH, MatchResult.MATCH,
             MatchResult.PARTIAL_MATCH, MatchResult.PARTIAL_MATCH,
             MatchResult.MATCH, MatchResult.MATCH);
+
+        test("019.e+1l", MatchResult.MATCH, MatchResult.MATCH,
+                MatchResult.PARTIAL_MATCH, MatchResult.MATCH,
+                MatchResult.PARTIAL_MATCH, MatchResult.PARTIAL_MATCH,
+                MatchResult.MATCH, MatchResult.NOT_A_MATCH);
+        test("019.e+1f", MatchResult.MATCH, MatchResult.MATCH,
+                MatchResult.PARTIAL_MATCH, MatchResult.MATCH,
+                MatchResult.PARTIAL_MATCH, MatchResult.PARTIAL_MATCH,
+                MatchResult.MATCH, MatchResult.MATCH);
+        test("019.e+1d", MatchResult.MATCH, MatchResult.MATCH,
+                MatchResult.PARTIAL_MATCH, MatchResult.MATCH,
+                MatchResult.PARTIAL_MATCH, MatchResult.PARTIAL_MATCH,
+                MatchResult.MATCH, MatchResult.MATCH);
+
     }
 
     @Test
@@ -280,21 +294,41 @@ public class NumberLiteralRecognizerTest
     public void testGetValue()
     {
         testValue("10", 10);
+        testValue("10d", 10d);
+        testValue("10D", 10D);
+        testValue("10f", 10f);
+        testValue("10F", 10F);
         testValue("10l", 10l);
+        testValue("10L", 10L);
         testValue("10.0f", 10.0f);
         testValue("10.0d", 10.0d);
         testValue("10.0e1f", 10.0e1f);
         testValue("10.0e2d", 10.0e2d);
         testValue("10.0e-1f", 10.0e-1f);
         testValue("10.0e-2d", 10.0e-2d);
+        testValue("10.0e+1f", 10.0e+1f);
+        testValue("10.0e+2d", 10.0e+2d);
+        testValue("10e1", 10e1);
 
         testValue("0x1", 0x1);
         testValue("0xe", 0xe);
+        testValue("0xead", 0xead);
         testValue("0xeal", 0xeal);
+        testValue("0xeaf", 0xeaf);
 
         testValue("07", 7);
         testValue("076", 076);
         testValue("076l", 076l);
+        testValue("0e20", 0e20);
+        testValue("0d", 0d);
+        testValue("0e1", 0e1);
+        testValue("0f", 0f);
+        testValue("07d", 07d);
+        testValue("07e1", 07e1);
+        testValue("07f", 07f);
+        testValue("078d", 078d);
+        testValue("078e1", 078e1);
+        testValue("078f", 078f);
     }
 
     private void test(String aInString, MatchResult ... aInResults)

@@ -20,7 +20,8 @@ package mardlucca.parselib.tokenizer;
 
 import org.apache.commons.lang3.StringUtils;
 
-public class MultiLineCommentRecognizer<T> extends BaseTokenRecognizer<T>
+public class MultiLineCommentRecognizer<T>
+        extends BaseTokenRecognizer<T, String>
 {
     public static final String DEFAULT_START_CHAR_SEQUENCE = "/*";
 
@@ -33,11 +34,6 @@ public class MultiLineCommentRecognizer<T> extends BaseTokenRecognizer<T>
     private String substring;
 
     private int index;
-
-    public MultiLineCommentRecognizer()
-    {
-        this(null, null);
-    }
 
     public MultiLineCommentRecognizer(
             String aInInitialCharSequence,
@@ -117,9 +113,14 @@ public class MultiLineCommentRecognizer<T> extends BaseTokenRecognizer<T>
     }
 
     @Override
-    public Object getValue(String aInCharSequence)
+    public String getValue(String aInCharSequence)
     {
         return null;
+    }
+
+    @Override
+    public boolean isIgnored() {
+        return true;
     }
 
     private enum State

@@ -20,21 +20,21 @@ package mardlucca.parselib.tokenizer;
 
 import java.io.IOException;
 
-public interface Tokenizer<T> extends Iterable<Token<T>>
+public interface Tokenizer<T> extends Iterable<Token<T, ?>>
 {
-    Token<T> nextToken(Object aInSyntacticContext)
+    Token<T, ?> nextToken(Object aInSyntacticContext)
         throws IOException, UnrecognizedCharacterSequenceException;
 
-    Token<T> peekToken(Object aInSyntacticContext)
+    Token<T, ?> peekToken(Object aInSyntacticContext)
             throws IOException, UnrecognizedCharacterSequenceException;
 
-    default Token<T> nextToken()
+    default Token<T, ?> nextToken()
             throws IOException, UnrecognizedCharacterSequenceException
     {
         return nextToken(null);
     }
 
-    default Token<T> peekToken()
+    default Token<T, ?> peekToken()
             throws IOException, UnrecognizedCharacterSequenceException
     {
         return peekToken(null);

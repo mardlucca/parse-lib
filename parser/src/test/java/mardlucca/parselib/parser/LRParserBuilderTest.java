@@ -27,6 +27,7 @@ import org.junit.Test;
 import java.io.IOException;
 
 import static java.lang.Character.isUpperCase;
+import static mardlucca.parselib.tokenizer.Recognizers.*;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.fail;
 
@@ -42,13 +43,13 @@ public class LRParserBuilderTest
     public static void beforeClass()
     {
         tokenizerBuilder = new BasicTokenizer.Builder<TestToken>()
-            .identifiers(TestToken.IDENTIFIER)
-            .numberLiterals(TestToken.NUMBER)
-            .symbol("+", TestToken.PLUS)
-            .symbol("*", TestToken.STAR)
-            .symbol(".", TestToken.PERIOD)
-            .symbol("(", TestToken.OPEN_PARENTHESIS)
-            .symbol(")", TestToken.CLOSE_PARENTHESIS)
+            .recognize(identifiers(TestToken.IDENTIFIER))
+            .recognize(numbers(TestToken.NUMBER))
+            .recognize(symbol("+", TestToken.PLUS))
+            .recognize(symbol("*", TestToken.STAR))
+            .recognize(symbol(".", TestToken.PERIOD))
+            .recognize(symbol("(", TestToken.OPEN_PARENTHESIS))
+            .recognize(symbol(")", TestToken.CLOSE_PARENTHESIS))
             .endOfFile(TestToken.EOF);
 
         parser = new LRParserBuilder<>(

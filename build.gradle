@@ -17,8 +17,8 @@
  */
 
 subprojects {
-    group = 'mardlucca'
-    version = '1.0.0'
+    group = 'mardlucca.parselib'
+    version = '1.1.0'
 
     repositories {
         mavenCentral()
