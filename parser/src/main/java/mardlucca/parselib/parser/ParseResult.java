@@ -1,5 +1,5 @@
 /*
- * File: ProductionTest.java
+ * File: ParseResult.java
  *
  * Copyright 2020 Marcio D. Lucca
  *
@@ -18,22 +18,11 @@
 
 package mardlucca.parselib.parser;
 
-import org.junit.Test;
+import java.util.List;
 
-import static org.junit.Assert.*;
-
-public class ProductionTest
+public interface ParseResult
 {
-    @Test
-    public void testToString()
-    {
-        Production<String> lProduction = new Production<>(
-            "S'",
-            TestToken.IDENTIFIER,
-            TestToken.ASSIGNMENT,
-            TestToken.NUMBER);
+    Object getValue();
 
-        assertEquals("S' -> id = num", lProduction.toString());
-    }
-
+    List<String> getErrors();
 }

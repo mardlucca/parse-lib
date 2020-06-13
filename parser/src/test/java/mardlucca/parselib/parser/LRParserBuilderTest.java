@@ -18,13 +18,14 @@
 
 package mardlucca.parselib.parser;
 
-import mardlucca.parselib.parser.LRParser.ParseResult;
 import mardlucca.parselib.tokenizer.BasicTokenizer;
 import mardlucca.parselib.tokenizer.UnrecognizedCharacterSequenceException;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
 
 import static java.lang.Character.isUpperCase;
 import static mardlucca.parselib.tokenizer.Recognizers.*;
@@ -33,11 +34,11 @@ import static org.junit.Assert.fail;
 
 public class LRParserBuilderTest
 {
-    private static TestParserListener listener = new TestParserListener();
+    private static List<String> reducedProductions = new ArrayList<>();
 
     private static BasicTokenizer.Builder<TestToken> tokenizerBuilder;
 
-    private static LRParser<TestToken, String> parser;
+    private static Parser parser;
 
     @BeforeClass
     public static void beforeClass()
@@ -52,11 +53,15 @@ public class LRParserBuilderTest
             .recognize(symbol(")", TestToken.CLOSE_PARENTHESIS))
             .endOfFile(TestToken.EOF);
 
-        parser = new LRParserBuilder<>(
-            "LRParserBuilderTest",
-            TestToken::parse,
-            aInString -> isUpperCase(aInString.charAt(0)) ? aInString : null)
-            .build(tokenizerBuilder::build);
+        LRParsingTable<TestToken> lParseTable =
+                new LRParsingTableBuilder<>(
+                        "LRParserBuilderTest",
+                        TestToken::parse,
+                        aInString -> isUpperCase(aInString.charAt(0))
+                                ? aInString : null)
+                        .build();
+        lParseTable.onDefaultReduce(new TestParserListener(reducedProductions));
+        parser = lParseTable.buildParser(tokenizerBuilder::build);
     }
 
     @Test
@@ -86,11 +91,11 @@ public class LRParserBuilderTest
     {
         try
         {
-            new LRParserBuilder<>(
+            new LRParsingTableBuilder<>(
                 "invalidGrammar1",
                 TestToken::parse,
                 aInString -> isUpperCase(aInString.charAt(0)) ?
-                    aInString : null).build(null);
+                    aInString : null).build();
             fail("Should have thrown exception");
         }
         catch (RuntimeException e)
@@ -105,11 +110,11 @@ public class LRParserBuilderTest
     {
         try
         {
-            new LRParserBuilder<>(
+            new LRParsingTableBuilder<>(
                 "invalidGrammar2",
                 TestToken::parse,
                 aInString -> isUpperCase(aInString.charAt(0)) ?
-                    aInString : null).build(null);
+                    aInString : null).build();
             fail("Should have thrown exception");
         }
         catch (RuntimeException e)
@@ -125,11 +130,11 @@ public class LRParserBuilderTest
     {
         try
         {
-            new LRParserBuilder<>(
+            new LRParsingTableBuilder<>(
                 "invalidGrammar3",
                 TestToken::parse,
                 aInString -> isUpperCase(aInString.charAt(0)) ?
-                    aInString : null).build(null);
+                    aInString : null).build();
             fail("Should have thrown exception");
         }
         catch (RuntimeException e)
@@ -145,11 +150,11 @@ public class LRParserBuilderTest
     {
         try
         {
-            new LRParserBuilder<>(
+            new LRParsingTableBuilder<>(
                 "invalidGrammar4",
                 TestToken::parse,
                 aInString -> isUpperCase(aInString.charAt(0)) ?
-                    aInString : null).build(null);
+                    aInString : null).build();
             fail("Should have thrown exception");
         }
         catch (RuntimeException e)
@@ -165,11 +170,11 @@ public class LRParserBuilderTest
     {
         try
         {
-            new LRParserBuilder<>(
+            new LRParsingTableBuilder<>(
                 "invalidGrammar5",
                 TestToken::parse,
                 aInString -> isUpperCase(aInString.charAt(0)) ?
-                    aInString : null).build(null);
+                    aInString : null).build();
             fail("Should have thrown exception");
         }
         catch (RuntimeException e)
@@ -184,11 +189,11 @@ public class LRParserBuilderTest
     {
         try
         {
-            new LRParserBuilder<>(
+            new LRParsingTableBuilder<>(
                 "invalidTable1",
                 TestToken::parse,
                 aInString -> isUpperCase(aInString.charAt(0)) ?
-                    aInString : null).build(null);
+                    aInString : null).build();
             fail("Should have thrown exception");
         }
         catch (RuntimeException e)
@@ -203,11 +208,11 @@ public class LRParserBuilderTest
     {
         try
         {
-            new LRParserBuilder<>(
+            new LRParsingTableBuilder<>(
                 "invalidTable2",
                 TestToken::parse,
                 aInString -> isUpperCase(aInString.charAt(0)) ?
-                    aInString : null).build(null);
+                    aInString : null).build();
             fail("Should have thrown exception");
         }
         catch (RuntimeException e)
@@ -222,11 +227,11 @@ public class LRParserBuilderTest
     {
         try
         {
-            new LRParserBuilder<>(
+            new LRParsingTableBuilder<>(
                 "invalidTable3",
                 TestToken::parse,
                 aInString -> isUpperCase(aInString.charAt(0)) ?
-                    aInString : null).build(null);
+                    aInString : null).build();
             fail("Should have thrown exception");
         }
         catch (RuntimeException e)
@@ -241,11 +246,11 @@ public class LRParserBuilderTest
     {
         try
         {
-            new LRParserBuilder<>(
+            new LRParsingTableBuilder<>(
                 "invalidTable4",
                 TestToken::parse,
                 aInString -> isUpperCase(aInString.charAt(0)) ?
-                    aInString : null).build(null);
+                    aInString : null).build();
             fail("Should have thrown exception");
         }
         catch (RuntimeException e)
@@ -267,9 +272,8 @@ public class LRParserBuilderTest
         String ... aInProductions)
         throws IOException, UnrecognizedCharacterSequenceException
     {
-        listener.reset();
-        ParseResult lInvocation = parser.parse(
-                aInString, listener);
+        reducedProductions.clear();
+        ParseResult lInvocation = parser.parse(aInString);
 
         if (aInErrorMessage == null)
         {
@@ -279,12 +283,10 @@ public class LRParserBuilderTest
         {
             assertEquals(aInErrorMessage, lInvocation.getErrors().get(0));
         }
-        assertEquals(aInProductions.length,
-            listener.getReducedProductions().size());
+        assertEquals(aInProductions.length, reducedProductions.size());
         for (int i = 0; i < aInProductions.length; i++)
         {
-            assertEquals(aInProductions[i],
-                listener.getReducedProductions().get(i));
+            assertEquals(aInProductions[i], reducedProductions.get(i));
         }
     }
 }

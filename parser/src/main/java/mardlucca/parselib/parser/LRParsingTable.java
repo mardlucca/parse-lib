@@ -18,23 +18,16 @@
 
 package mardlucca.parselib.parser;
 
+import mardlucca.parselib.parser.Grammar.ReduceListener;
 import mardlucca.parselib.tokenizer.Token;
 import mardlucca.parselib.tokenizer.Tokenizer;
 import mardlucca.parselib.tokenizer.TokenizerFactory;
 import mardlucca.parselib.tokenizer.UnrecognizedCharacterSequenceException;
 
 import java.io.IOException;
-import java.io.Reader;
-import java.io.StringReader;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Objects;
-import java.util.Stack;
+import java.util.*;
 
-public class LRParser<T, NT>
-{
+public class LRParsingTable<T> {
     private int stateSequence = 0;
 
     private List<State> states = new ArrayList<>();
@@ -42,70 +35,74 @@ public class LRParser<T, NT>
     private ErrorAction defaultErrorAction =
         new ErrorAction("Syntax error");
 
-    private TokenizerFactory<T> tokenizerFactory;
+    private Grammar grammar;
 
-    private Grammar<NT> grammar;
-
-    protected LRParser(
-            TokenizerFactory<T> aInTokenizerFactory,
-            Grammar<NT> aInGrammar)
+    protected LRParsingTable(Grammar aInGrammar)
     {
-        tokenizerFactory = aInTokenizerFactory;
         grammar = aInGrammar;
     }
 
-    public ParseResult parse(String aInString, ReduceListener<NT> aInListener)
-            throws IOException, UnrecognizedCharacterSequenceException
-    {
-        return parse(new StringReader(aInString), aInListener);
-    }
-
-    public ParseResult parse(
-        Reader aInReader, ReduceListener<NT> aInListener)
-        throws IOException, UnrecognizedCharacterSequenceException
-    {
-        Tokenizer<T> lTokenizer = tokenizerFactory.newTokenizer(aInReader);
-        ParseInvocation lInvocation = new ParseInvocation(
-            states.get(0), lTokenizer, aInListener);
-
-        lInvocation.currentToken = lTokenizer.nextToken(
-                lInvocation.currentState);
-        Action lNextAction;
-        do
-        {
-            lNextAction = lInvocation.nextAction();
-            if (lNextAction == null)
-            {
-                // no action found, so we're in error
-                lNextAction = defaultErrorAction;
-            }
-        }
-        while (lNextAction.execute(lInvocation));
-
-        return lInvocation;
-    }
-
-    public Grammar<NT> getGrammar()
-    {
-        return grammar;
-    }
-
-    protected State newState()
+    public State newState()
     {
         State lNewState = new State(stateSequence++);
         states.add(lNewState);
         return lNewState;
     }
 
-    protected State getState(int aInIndex)
+    public State getState(int aInIndex)
     {
         return states.get(aInIndex);
+    }
+
+    public LRParsingTable<T> onDefaultReduce(ReduceListener aInListener) {
+        grammar.onDefaultReduce(aInListener);
+        return this;
+    }
+
+    public LRParsingTable<T> onReduce(
+            int aInProduction, ReduceListener aInReduceListener)
+    {
+        grammar.onReduce(aInProduction, aInReduceListener);
+        return this;
+    }
+
+    public LRParsingTable<T> onReduce(
+            String aInProductionString, ReduceListener aInReduceListener)
+    {
+        grammar.onReduce(aInProductionString, aInReduceListener);
+        return this;
+    }
+
+    public Parser buildParser(TokenizerFactory<T> aInTokenizerFactory)
+    {
+        return aInReader -> {
+            Tokenizer<T> lTokenizer =
+                    aInTokenizerFactory.newTokenizer(aInReader);
+            ParseInvocation lInvocation = new ParseInvocation(
+                    states.get(0), lTokenizer);
+
+            lInvocation.currentToken = lTokenizer.nextToken(
+                    lInvocation.currentState);
+            Action lNextAction;
+            do
+            {
+                lNextAction = lInvocation.nextAction();
+                if (lNextAction == null)
+                {
+                    // no action found, so we're in error
+                    lNextAction = defaultErrorAction;
+                }
+            }
+            while (lNextAction.execute(lInvocation));
+
+            return lInvocation;
+        };
     }
 
     public class State
     {
         private int number;
-        private Map<NT, GotoAction> goTos = new HashMap<>();
+        private Map<String, GotoAction> goTos = new HashMap<>();
         private Map<T, Action> actions = new HashMap<>();
 
         private State(int aInNumber)
@@ -130,7 +127,7 @@ public class LRParser<T, NT>
             return this;
         }
 
-        public State goTo(NT aInSymbol, int aInState)
+        public State goTo(String aInSymbol, int aInState)
         {
             goTos.put(aInSymbol, new GotoAction(aInState));
             return this;
@@ -281,12 +278,12 @@ public class LRParser<T, NT>
 
     private class ReduceAction extends Action
     {
-        private Production<NT> production;
+        private Grammar.Production production;
 
         private int numberOfSymbols;
 
-        public ReduceAction(
-            Production<NT> aInProduction)
+        ReduceAction(
+                Grammar.Production aInProduction)
         {
             production = aInProduction;
             numberOfSymbols = production.getRightHandSide().length;
@@ -302,13 +299,11 @@ public class LRParser<T, NT>
                 lValues[i] = aInInvocation.symbolStack.pop().getValue();
             }
 
-            Object lNewValue = null;
             try
             {
-                lNewValue = aInInvocation.listener == null ?
-                    null : aInInvocation.listener.onReduce(production, lValues);
-                aInInvocation.goTo = new NonTerminal<>
-                        (production.getLeftHandSide(), lNewValue);
+                aInInvocation.goTo = new NonTerminal(
+                        production.getLeftHandSide(),
+                        production.onReduce(production, lValues));
 
                 return true;
             }
@@ -332,9 +327,9 @@ public class LRParser<T, NT>
         private Action equalsAction;
         private Action notEqualsAction;
 
-        public ConditionalAction(T aInNextToken,
-                Action aInEqualsAction,
-                Action aInNotEqualsAction)
+        ConditionalAction(T aInNextToken,
+                          Action aInEqualsAction,
+                          Action aInNotEqualsAction)
         {
             nextToken = aInNextToken;
             equalsAction = aInEqualsAction;
@@ -356,42 +351,31 @@ public class LRParser<T, NT>
         }
     }
 
-    public interface ParseResult
-    {
-        Object getValue();
-
-        List<String> getErrors();
-    }
-
     public class ParseInvocation implements ParseResult
     {
-        private Stack<Symbol<?>> symbolStack = new Stack<>();
+        private Deque<Symbol<?>> symbolStack = new ArrayDeque<>();
 
-        private Stack<State> stateStack = new Stack<>();
+        private Deque<State> stateStack = new ArrayDeque<>();
 
         private State currentState;
 
         private Token<T, ?> currentToken;
-        
+
         private Tokenizer<T> tokenizer;
-        
-        private NonTerminal<NT> goTo;
+
+        private NonTerminal goTo;
 
         // TODO: Should this be a generic type?
         private Object value;
 
         private List<String> errors = new ArrayList<>();
 
-        private ReduceListener<NT> listener;
-
         private ParseInvocation(
             State aInCurrentState,
-            Tokenizer<T> aInTokenizer,
-            ReduceListener<NT> aInListener)
+            Tokenizer<T> aInTokenizer)
         {
             currentState = aInCurrentState;
             tokenizer = aInTokenizer;
-            listener = aInListener;
         }
 
         private Action nextAction()
@@ -425,7 +409,7 @@ public class LRParser<T, NT>
     {
         private Token<T, ?> value;
 
-        public Terminal(Token<T, ?> aInValue)
+        Terminal(Token<T, ?> aInValue)
         {
             value = aInValue;
         }
@@ -442,20 +426,20 @@ public class LRParser<T, NT>
         }
     }
 
-    private  static class NonTerminal<T> implements Symbol<T>
+    private static class NonTerminal implements Symbol<String>
     {
-        private T id;
+        private String id;
 
         private Object value;
 
-        public NonTerminal(T aInId, Object aInValue)
+        NonTerminal(String aInId, Object aInValue)
         {
             id = aInId;
             value = aInValue;
         }
 
         @Override
-        public T getId()
+        public String getId()
         {
             return id;
         }
@@ -466,5 +450,4 @@ public class LRParser<T, NT>
             return value;
         }
     }
-
 }

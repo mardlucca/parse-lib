@@ -1,5 +1,5 @@
 /*
- * File: ReduceListener.java
+ * File: GrammarTest.java
  *
  * Copyright 2020 Marcio D. Lucca
  *
@@ -15,10 +15,25 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
 package mardlucca.parselib.parser;
 
-public interface ReduceListener<NT>
-{
-    Object onReduce(Production<NT> aInProduction, Object[] aInValues)
-            throws ParsingException;
+import org.junit.Test;
+
+import static org.junit.Assert.*;
+
+public class GrammarTest {
+
+    @Test
+    public void testToString()
+    {
+        Grammar lGrammar = new Grammar()
+                .addProduction(
+                        "S'",
+                        TestToken.IDENTIFIER,
+                        TestToken.ASSIGNMENT,
+                        TestToken.NUMBER);
+
+        assertEquals("S' -> id = num", lGrammar.getProduction(0).toString());
+    }
 }

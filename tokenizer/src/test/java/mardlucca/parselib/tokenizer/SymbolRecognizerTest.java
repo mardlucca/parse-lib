@@ -18,7 +18,6 @@
 
 package mardlucca.parselib.tokenizer;
 
-import com.sun.org.apache.regexp.internal.RE;
 import org.junit.Test;
 
 import static org.junit.Assert.*;

@@ -1,5 +1,5 @@
 /*
- * File: TestParserListener.java
+ * File: Parser.java
  *
  * Copyright 2020 Marcio D. Lucca
  *
@@ -18,23 +18,19 @@
 
 package mardlucca.parselib.parser;
 
-import mardlucca.parselib.parser.Grammar.Production;
+import mardlucca.parselib.tokenizer.UnrecognizedCharacterSequenceException;
 
-import java.util.List;
+import java.io.IOException;
+import java.io.Reader;
+import java.io.StringReader;
 
-public class TestParserListener implements Grammar.ReduceListener
-{
-    private List<String> reducedProductions;
-
-    public TestParserListener(List<String> aInReducedProductions) {
-        reducedProductions = aInReducedProductions;
-    }
-
-    @Override
-    public Object onReduce(Production aInProduction, Object[] aInValues)
+public interface Parser {
+    default ParseResult parse(String aInString)
+            throws IOException, UnrecognizedCharacterSequenceException
     {
-        reducedProductions.add(aInProduction.toString());
-        return null;
+        return parse(new StringReader(aInString));
     }
-}
 
+    ParseResult parse(Reader aInReader)
+                throws IOException, UnrecognizedCharacterSequenceException;
+}

@@ -18,8 +18,6 @@
 
 package mardlucca.parselib.tokenizer;
 
-import java.util.function.Predicate;
-
 public class SymbolRecognizer<T> extends BaseTokenRecognizer<T, String>
 {
     private String value;

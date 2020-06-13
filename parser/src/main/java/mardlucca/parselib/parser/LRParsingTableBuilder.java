@@ -18,8 +18,6 @@
 
 package mardlucca.parselib.parser;
 
-import mardlucca.parselib.tokenizer.TokenizerFactory;
-
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
@@ -38,7 +36,7 @@ import static org.apache.commons.lang3.StringUtils.isBlank;
 import static org.apache.commons.lang3.StringUtils.isNotBlank;
 import static org.apache.commons.lang3.StringUtils.isNumeric;
 
-public class LRParserBuilder<T, NT>
+public class LRParsingTableBuilder<T>
 {
     private static final Pattern SYMBOL_REGEX =
         Pattern.compile("[ \\t\\n\\r]+");
@@ -50,22 +48,22 @@ public class LRParserBuilder<T, NT>
 
     private String languageName;
     private Function<String, T> terminalParser;
-    private Function<String, NT> nonTerminalParser;
+    private Function<String, String> nonTerminalParser;
     private Function<String, Boolean> epsilonParser;
-    protected Grammar<NT> grammar;
+    protected Grammar grammar;
 
-    public LRParserBuilder(String aInLanguageName,
-            Function<String, T> aInTerminalParser,
-            Function<String, NT> aInNonTerminalParser)
+    public LRParsingTableBuilder(String aInLanguageName,
+                                 Function<String, T> aInTerminalParser,
+                                 Function<String, String> aInNonTerminalParser)
     {
         this(aInLanguageName, aInTerminalParser, aInNonTerminalParser, null);
     }
 
 
-    public LRParserBuilder(String aInLanguageName,
-            Function<String, T> aInTerminalParser,
-            Function<String, NT> aInNonTerminalParser,
-            Grammar<NT> aInGrammar)
+    public LRParsingTableBuilder(String aInLanguageName,
+                                 Function<String, T> aInTerminalParser,
+                                 Function<String, String> aInNonTerminalParser,
+                                 Grammar aInGrammar)
     {
         languageName = aInLanguageName;
         terminalParser = aInTerminalParser;
@@ -74,12 +72,12 @@ public class LRParserBuilder<T, NT>
         grammar = aInGrammar;
     }
 
-    public LRParser<T, NT> build(TokenizerFactory<T> aInTokenizerFactory)
+    public LRParsingTable<T> build()
     {
-        Grammar<NT> lGrammar = loadGrammar();
+        Grammar lGrammar = loadGrammar();
 
         Properties lErrors = loadErrorFile();
-        LRParser<T, NT> lParser = new LRParser<>(aInTokenizerFactory, lGrammar);
+        LRParsingTable<T> lParsingTable = new LRParsingTable<>(lGrammar);
         try (BufferedReader lReader = new BufferedReader(
             new InputStreamReader(getClass().getResourceAsStream(
                 getFile(TABLE_SUFFIX)))))
@@ -141,7 +139,7 @@ public class LRParserBuilder<T, NT>
                             '"');
                     }
 
-                    LRParser<T, NT>.State lState = lParser.newState();
+                    LRParsingTable<T>.State lState = lParsingTable.newState();
                     lExpectedState++;
                     for (int i = 1; i < lParts.length; i++)
                     {
@@ -190,7 +188,7 @@ public class LRParserBuilder<T, NT>
                             // go to expected for non-terminal symbol
                             if (isNumeric(lParts[i]))
                             {
-                                lState.goTo((NT) lSymbols[i - 1],
+                                lState.goTo(lSymbols[i - 1].toString(),
                                     Integer.parseInt(lParts[i]));
                             }
                             else
@@ -203,7 +201,6 @@ public class LRParserBuilder<T, NT>
                             }
                         }
                     }
-                    onNewState(lState);
                 }
             }
         }
@@ -212,12 +209,7 @@ public class LRParserBuilder<T, NT>
             throw new RuntimeException(e);
         }
 
-        return lParser;
-    }
-
-    protected void onNewState(LRParser<T, NT>.State aInState)
-    {
-        // do nothing by default
+        return lParsingTable;
     }
 
     private static String getError(Properties aInErrors, int aInErrorNumber)
@@ -232,7 +224,7 @@ public class LRParserBuilder<T, NT>
         return lErrorMessage;
     }
 
-    private Grammar<NT> loadGrammar()
+    private Grammar loadGrammar()
     {
         if (grammar != null)
         {
@@ -241,7 +233,7 @@ public class LRParserBuilder<T, NT>
 
         try
         {
-            Grammar<NT> lGrammar = new Grammar();
+            Grammar lGrammar = new Grammar();
             Files.lines(Paths.get(this.getClass().getResource(
                 getFile(GRAMMAR_SUFFIX)).toURI())).forEach(aInLine ->
                 {
@@ -257,7 +249,7 @@ public class LRParserBuilder<T, NT>
                             "than 3 symbols: " + aInLine);
                     }
 
-                    NT lLeftHandSide = nonTerminalParser.apply(lParts[0]);
+                    String lLeftHandSide = nonTerminalParser.apply(lParts[0]);
                     if (lLeftHandSide == null)
                     {
                         throw new RuntimeException("Left hand symbol \"" +
@@ -277,7 +269,7 @@ public class LRParserBuilder<T, NT>
                         {
                             if (epsilonParser.apply(lParts[i]))
                             {
-                                if (i != 2 || lParts.length != 3)
+                                if (lParts.length != 3)
                                 {
                                     throw new RuntimeException("Epsilon " +
                                         "symbol must be the only one in " +
@@ -295,10 +287,9 @@ public class LRParserBuilder<T, NT>
                         lRightHandSide.add(lSymbol);
                     }
 
-                    lGrammar.addProduction(new Production<>(
+                    lGrammar.addProduction(
                             lLeftHandSide,
-                            lRightHandSide.toArray(
-                                    new Object[lRightHandSide.size()])));
+                            lRightHandSide.toArray(new Object[0]));
 
                 });
             return lGrammar;

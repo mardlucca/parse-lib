@@ -43,6 +43,8 @@ public class BasicTokenizer<T> implements Tokenizer<T>
 
     private Deque<Integer> buffer = new ArrayDeque<>();
 
+    private List<Integer> charactersRead = new ArrayList<>();
+
     private BasicTokenizer(
             List<TokenRecognizer<T, ?>> aInRecognizers,
             Reader aInReader,
@@ -90,18 +92,18 @@ public class BasicTokenizer<T> implements Tokenizer<T>
         TokenRecognizer<T, ?> lCandidate = null;
         TokenRecognizer<T, ?> lPartialCandidate = null;
         int lCandidateStringLength = 0;
-        List<Integer> lCharactersRead = new ArrayList<>();
+        charactersRead.clear();
 
         do
         {
             int lCurrentCharacter = nextChar();
-            if (lCurrentCharacter == -1 && lCharactersRead.isEmpty())
+            if (lCurrentCharacter == -1 && charactersRead.isEmpty())
             {
                 // end of file/stream.
                 return new Token<>(endOfFile, null, null);
             }
 
-            lCharactersRead.add(lCurrentCharacter);
+            charactersRead.add(lCurrentCharacter);
 
             for (Iterator<TokenRecognizer<T, ?>> lIterator =
                 lRecognizersLeft.iterator(); lIterator.hasNext(); )
@@ -117,14 +119,16 @@ public class BasicTokenizer<T> implements Tokenizer<T>
                 }
                 else if (lMatchResult == MatchResult.MATCH)
                 {
-                    // if not candidates in this pass, we found one
-                    if (lCandidateStringLength < lCharactersRead.size())
+                    if (charactersRead.size() > lCandidateStringLength)
                     {
-                        lCandidateStringLength = lCharactersRead.size();
+                        // This is the first candidate in this pass.
+                        lCandidateStringLength = charactersRead.size();
                         lCandidate = lRecognizer;
                     }
                     // else we already have a candidate, so we prioritize the
-                    // first
+                    // first. Note that multiple recognizers can match a string,
+                    // for example, string "if" can be both a keyword and
+                    // identifier.
                 }
                 else
                 {
@@ -142,11 +146,11 @@ public class BasicTokenizer<T> implements Tokenizer<T>
         // any characters that were read that are not present in the candidate
         // string must be put back into a buffer so we can start the next pass
         // from them
-        for (int i = lCharactersRead.size() - 1;
+        for (int i = charactersRead.size() - 1;
                 i >= lCandidateStringLength;
                 i--)
         {
-            buffer.push(lCharactersRead.get(i));
+            buffer.addFirst(charactersRead.get(i));
         }
 
         if (lCandidate == null)
@@ -160,16 +164,14 @@ public class BasicTokenizer<T> implements Tokenizer<T>
                 lDetails = lPartialCandidate.getFailureReason();
             }
             // else we can't really tell what went wrong, we just produce a
-            // generic error. If the buffer at this point contains only the
-            // invalid character we clear the buffer so we may be able to
-            // proceed tokenizing
-            if (buffer.size() == 1)
-            {
-                buffer.clear();
-            }
+            // generic error. The top of the buffer now contains the offending
+            // character (that could not be recognized and did not produce even
+            // a partial match). We remove it from the buffer so that we can
+            // continue tokenizing, if required.
+            buffer.pop();
 
             throw new UnrecognizedCharacterSequenceException(
-                    toString(lCharactersRead, lCharactersRead.size()),
+                    toString(charactersRead, charactersRead.size()),
                     lDetails);
         }
 
@@ -181,7 +183,7 @@ public class BasicTokenizer<T> implements Tokenizer<T>
         }
 
         Token<T, ?> lToken = lCandidate.getToken(
-                toString(lCharactersRead, lCandidateStringLength));
+                toString(charactersRead, lCandidateStringLength));
 
         if (aInPeek)
         {
@@ -200,12 +202,12 @@ public class BasicTokenizer<T> implements Tokenizer<T>
             List<Integer> aInCharactersRead,
             int aInLength)
     {
-        StringBuilder lBuilder = new StringBuilder();
+        char[] lChars = new char[aInLength];
         for (int i = 0; i < aInLength; i++)
         {
-            lBuilder.append((char) aInCharactersRead.get(i).intValue());
+            lChars[i] = (char) aInCharactersRead.get(i).intValue();
         }
-        return lBuilder.toString();
+        return new String(lChars);
     }
 
     public static class Builder<T>
@@ -255,6 +257,7 @@ public class BasicTokenizer<T> implements Tokenizer<T>
                     custom.stream().map(Supplier::get)
                             .collect(Collectors.toList());
 
+            // TODO: There's no reason why these can't be pooled and reused.
             return new BasicTokenizer<>(lRecognizers, aInReader, endOfFile);
         }
     }
@@ -271,13 +274,10 @@ public class BasicTokenizer<T> implements Tokenizer<T>
             @Override
             public boolean hasNext()
             {
-                if (reachedTheEnd)
-                {
-                    return false;
-                }
-
                 if (next == null)
                 {
+                    if (reachedTheEnd) { return false; }
+
                     try
                     {
                         next = nextToken();
@@ -288,18 +288,16 @@ public class BasicTokenizer<T> implements Tokenizer<T>
                     {
                         throw new RuntimeException(e);
                     }
-
-                    if (next == null)
-                    {
-                        reachedTheEnd = true;
-                    }
                 }
-                return next != null;
+
+                return true;
             }
 
             @Override
             public Token<T, ?> next()
             {
+                if (!hasNext()) { return null; }
+
                 Token<T, ?> lNext = next;
                 next = null;
                 return lNext;
