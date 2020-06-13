@@ -18,29 +18,25 @@
 
 package mardlucca.parselib.tokenizer;
 
-public class UnrecognizedCharacterSequenceException extends Exception
-{
+public class UnrecognizedCharacterSequenceException extends Exception {
     private String sequence;
 
     private String detail;
 
     public UnrecognizedCharacterSequenceException(String aInSequence,
-        String aInDetail)
-    {
+        String aInDetail) {
         sequence = aInSequence;
         detail = aInDetail;
     }
 
     @Override
-    public String getMessage()
-    {
+    public String getMessage() {
         return detail == null
             ? "Unrecognized character sequence: " + sequence
             : detail + ": " + sequence;
     }
 
-    public String getSequence()
-    {
+    public String getSequence() {
         return sequence;
     }
 }

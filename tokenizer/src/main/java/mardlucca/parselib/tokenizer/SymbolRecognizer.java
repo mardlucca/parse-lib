@@ -18,19 +18,16 @@
 
 package mardlucca.parselib.tokenizer;
 
-public class SymbolRecognizer<T> extends BaseTokenRecognizer<T, String>
-{
+public class SymbolRecognizer<T> extends BaseTokenRecognizer<T, String> {
     private String value;
 
     private int index = 0;
 
     private boolean notAMatch = false;
 
-    public SymbolRecognizer(String aInValue, T aInToken)
-    {
+    public SymbolRecognizer(String aInValue, T aInToken) {
         super(aInToken);
-        if (aInValue == null)
-        {
+        if (aInValue == null) {
             aInValue = aInToken.toString();
         }
 
@@ -38,16 +35,13 @@ public class SymbolRecognizer<T> extends BaseTokenRecognizer<T, String>
     }
 
     @Override
-    public MatchResult test(int aInChar, Object aInSyntacticContext)
-    {
-        if (notAMatch)
-        {
+    public MatchResult test(int aInChar, Object aInSyntacticContext) {
+        if (notAMatch) {
             return MatchResult.NOT_A_MATCH;
         }
 
         if (index >= value.length()
-            || value.charAt(index) != aInChar)
-        {
+            || value.charAt(index) != aInChar) {
             notAMatch = true;
             return MatchResult.NOT_A_MATCH;
         }
@@ -59,8 +53,7 @@ public class SymbolRecognizer<T> extends BaseTokenRecognizer<T, String>
     }
 
     @Override
-    public void reset()
-    {
+    public void reset() {
         super.reset();
         index = 0;
         notAMatch = false;

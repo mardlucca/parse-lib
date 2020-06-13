@@ -36,8 +36,7 @@ import static org.apache.commons.lang3.StringUtils.isBlank;
 import static org.apache.commons.lang3.StringUtils.isNotBlank;
 import static org.apache.commons.lang3.StringUtils.isNumeric;
 
-public class LRParsingTableBuilder<T>
-{
+public class LRParsingTableBuilder<T> {
     private static final Pattern SYMBOL_REGEX =
         Pattern.compile("[ \\t\\n\\r]+");
 
@@ -54,8 +53,7 @@ public class LRParsingTableBuilder<T>
 
     public LRParsingTableBuilder(String aInLanguageName,
                                  Function<String, T> aInTerminalParser,
-                                 Function<String, String> aInNonTerminalParser)
-    {
+                                 Function<String, String> aInNonTerminalParser) {
         this(aInLanguageName, aInTerminalParser, aInNonTerminalParser, null);
     }
 
@@ -63,8 +61,7 @@ public class LRParsingTableBuilder<T>
     public LRParsingTableBuilder(String aInLanguageName,
                                  Function<String, T> aInTerminalParser,
                                  Function<String, String> aInNonTerminalParser,
-                                 Grammar aInGrammar)
-    {
+                                 Grammar aInGrammar) {
         languageName = aInLanguageName;
         terminalParser = aInTerminalParser;
         nonTerminalParser = aInNonTerminalParser;
@@ -72,32 +69,27 @@ public class LRParsingTableBuilder<T>
         grammar = aInGrammar;
     }
 
-    public LRParsingTable<T> build()
-    {
+    public LRParsingTable<T> build() {
         Grammar lGrammar = loadGrammar();
 
         Properties lErrors = loadErrorFile();
         LRParsingTable<T> lParsingTable = new LRParsingTable<>(lGrammar);
         try (BufferedReader lReader = new BufferedReader(
             new InputStreamReader(getClass().getResourceAsStream(
-                getFile(TABLE_SUFFIX)))))
-        {
+                getFile(TABLE_SUFFIX))))) {
             Object[] lSymbols = null;
             boolean[] lIsTerminalFlags = null;
             int lExpectedState = 0;
 
             for (String lLine = lReader.readLine();
                 lLine != null;
-                lLine = lReader.readLine())
-            {
-                if (isBlank(lLine) || lLine.startsWith("#"))
-                {
+                lLine = lReader.readLine()) {
+                if (isBlank(lLine) || lLine.startsWith("#")) {
                     continue;
                 }
 
                 String[] lParts = lLine.split("\t");
-                if (lSymbols == null)
-                {
+                if (lSymbols == null) {
                     // the first thing we need to read is the header row
                     if (isNotBlank(lParts[0])) {
                         throw new RuntimeException(
@@ -109,31 +101,23 @@ public class LRParsingTableBuilder<T>
                     // the symbols contained in each column of the table
                     lSymbols = new Object[lParts.length - 1];
                     lIsTerminalFlags = new boolean[lParts.length - 1];
-                    for (int i = 1; i < lParts.length; i++)
-                    {
+                    for (int i = 1; i < lParts.length; i++) {
                         lSymbols[i - 1] = terminalParser.apply(lParts[i]);
-                        if (lSymbols[i - 1] != null)
-                        {
+                        if (lSymbols[i - 1] != null) {
                             lIsTerminalFlags[i - 1] = true;
-                        }
-                        else
-                        {
+                        } else {
                             lSymbols[i - 1] =
                                 nonTerminalParser.apply(lParts[i]);
                         }
-                        if (lSymbols[i - 1] == null)
-                        {
+                        if (lSymbols[i - 1] == null) {
                             throw new RuntimeException("\"" +
                                 lSymbols[i - 1] + "\" in parse table " +
                                 "file \"" + languageName +
                                 ".table\" is not a valid symbol");
                         }
                     }
-                }
-                else
-                {
-                    if (Integer.parseInt(lParts[0]) != lExpectedState)
-                    {
+                } else {
+                    if (Integer.parseInt(lParts[0]) != lExpectedState) {
                         throw new RuntimeException("Expected state \"" +
                             lExpectedState + "\" but found \"" + lParts[0] +
                             '"');
@@ -141,58 +125,41 @@ public class LRParsingTableBuilder<T>
 
                     LRParsingTable<T>.State lState = lParsingTable.newState();
                     lExpectedState++;
-                    for (int i = 1; i < lParts.length; i++)
-                    {
-                        if (isBlank(lParts[i]))
-                        {
+                    for (int i = 1; i < lParts.length; i++) {
+                        if (isBlank(lParts[i])) {
                             continue;
                         }
 
-                        if (lIsTerminalFlags[i - 1])
-                        {
+                        if (lIsTerminalFlags[i - 1]) {
                             T lTerminal = (T) lSymbols[i - 1];
-                            if (lParts[i].charAt(0) == 's')
-                            {
+                            if (lParts[i].charAt(0) == 's') {
                                 lState = lState.shift(lTerminal,
                                     Integer.parseInt(
                                         lParts[i].substring(1)));
-                            }
-                            else if  (lParts[i].charAt(0) == 'r')
-                            {
+                            } else if (lParts[i].charAt(0) == 'r') {
                                 lState = lState.reduce(
                                         lTerminal,
                                         Integer.parseInt(
                                                 lParts[i].substring(1)));
-                            }
-                            else if  (lParts[i].charAt(0) == 'e')
-                            {
+                            } else if (lParts[i].charAt(0) == 'e') {
                                 lState = lState.error(lTerminal,
                                     getError(lErrors, Integer.parseInt(
                                         lParts[i].substring(1))));
-                            }
-                            else if  (lParts[i].equals("acc"))
-                            {
+                            } else if (lParts[i].equals("acc")) {
                                 lState = lState.accept(lTerminal);
-                            }
-                            else
-                            {
+                            } else {
                                 throw new RuntimeException(
                                     "Invalid action \"" + lParts[i] +
                                         "\" in row \"" + lParts[0] +
                                         "\" and column \"" +
                                         lSymbols[i - 1] + '"');
                             }
-                        }
-                        else
-                        {
+                        } else {
                             // go to expected for non-terminal symbol
-                            if (isNumeric(lParts[i]))
-                            {
+                            if (isNumeric(lParts[i])) {
                                 lState.goTo(lSymbols[i - 1].toString(),
                                     Integer.parseInt(lParts[i]));
-                            }
-                            else
-                            {
+                            } else {
                                 throw new RuntimeException(
                                     "Invalid action \"" + lParts[i] +
                                         "\" in row \"" + lParts[0] +
@@ -204,73 +171,58 @@ public class LRParsingTableBuilder<T>
                 }
             }
         }
-        catch (IOException e)
-        {
+        catch (IOException e) {
             throw new RuntimeException(e);
         }
 
         return lParsingTable;
     }
 
-    private static String getError(Properties aInErrors, int aInErrorNumber)
-    {
+    private static String getError(Properties aInErrors, int aInErrorNumber) {
         String lErrorMessage = aInErrors.getProperty(
             String.valueOf(aInErrorNumber));
-        if (lErrorMessage == null)
-        {
+        if (lErrorMessage == null) {
             throw new RuntimeException("Could not find error message for " +
                 "error code \"" + aInErrorNumber + '"');
         }
         return lErrorMessage;
     }
 
-    private Grammar loadGrammar()
-    {
-        if (grammar != null)
-        {
+    private Grammar loadGrammar() {
+        if (grammar != null) {
             return grammar;
         }
 
-        try
-        {
+        try {
             Grammar lGrammar = new Grammar();
             Files.lines(Paths.get(this.getClass().getResource(
-                getFile(GRAMMAR_SUFFIX)).toURI())).forEach(aInLine ->
-                {
-                    if (isBlank(aInLine) || aInLine.startsWith("#"))
-                    {
+                getFile(GRAMMAR_SUFFIX)).toURI())).forEach(aInLine -> {
+                    if (isBlank(aInLine) || aInLine.startsWith("#")) {
                         return;
                     }
 
                     String[] lParts = getSymbols(aInLine);
-                    if (lParts.length < 3)
-                    {
+                    if (lParts.length < 3) {
                         throw new RuntimeException("Production with less " +
                             "than 3 symbols: " + aInLine);
                     }
 
                     String lLeftHandSide = nonTerminalParser.apply(lParts[0]);
-                    if (lLeftHandSide == null)
-                    {
+                    if (lLeftHandSide == null) {
                         throw new RuntimeException("Left hand symbol \"" +
                             lParts[0] + "\" in production \"" + aInLine +
                             "\" was not recognized as a non-terminal");
                     }
 
                     List<Object> lRightHandSide = new ArrayList<>();
-                    for (int i = 2; i < lParts.length; i++)
-                    {
+                    for (int i = 2; i < lParts.length; i++) {
                         Object lSymbol = nonTerminalParser.apply(lParts[i]);
-                        if (lSymbol == null)
-                        {
+                        if (lSymbol == null) {
                             lSymbol = terminalParser.apply(lParts[i]);
                         }
-                        if (lSymbol == null)
-                        {
-                            if (epsilonParser.apply(lParts[i]))
-                            {
-                                if (lParts.length != 3)
-                                {
+                        if (lSymbol == null) {
+                            if (epsilonParser.apply(lParts[i])) {
+                                if (lParts.length != 3) {
                                     throw new RuntimeException("Epsilon " +
                                         "symbol must be the only one in " +
                                         "the right hand side of a " +
@@ -294,37 +246,30 @@ public class LRParsingTableBuilder<T>
                 });
             return lGrammar;
         }
-        catch (IOException | URISyntaxException e)
-        {
+        catch (IOException | URISyntaxException e) {
             throw new RuntimeException(e);
         }
     }
 
-    private Properties loadErrorFile()
-    {
+    private Properties loadErrorFile() {
         Properties lProperties = new Properties();
-        try
-        {
+        try {
             InputStream lInputStream = getClass().getResourceAsStream(
                 getFile(ERROR_SUFFIX));
-            if (lInputStream != null)
-            {
+            if (lInputStream != null) {
                 lProperties.load(lInputStream);
             }
         }
-        catch (IOException ignore)
-        {
+        catch (IOException ignore) {
         }
         return lProperties;
     }
 
-    private String getFile(String aInExtension)
-    {
+    private String getFile(String aInExtension) {
         return "/META-INF/" + languageName + '.' + aInExtension;
     }
 
-    private String[] getSymbols(String aInLine)
-    {
+    private String[] getSymbols(String aInLine) {
         return SYMBOL_REGEX.split(aInLine.trim());
     }
 }

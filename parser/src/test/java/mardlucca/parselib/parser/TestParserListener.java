@@ -22,8 +22,7 @@ import mardlucca.parselib.parser.Grammar.Production;
 
 import java.util.List;
 
-public class TestParserListener implements Grammar.ReduceListener
-{
+public class TestParserListener implements Grammar.ReduceListener {
     private List<String> reducedProductions;
 
     public TestParserListener(List<String> aInReducedProductions) {
@@ -31,8 +30,7 @@ public class TestParserListener implements Grammar.ReduceListener
     }
 
     @Override
-    public Object onReduce(Production aInProduction, Object[] aInValues)
-    {
+    public Object onReduce(Production aInProduction, Object[] aInValues) {
         reducedProductions.add(aInProduction.toString());
         return null;
     }

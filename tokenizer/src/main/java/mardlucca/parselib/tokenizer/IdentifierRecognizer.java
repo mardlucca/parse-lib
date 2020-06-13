@@ -18,20 +18,17 @@
 
 package mardlucca.parselib.tokenizer;
 
-public class IdentifierRecognizer<T> extends BaseTokenRecognizer<T, String>
-{
+public class IdentifierRecognizer<T> extends BaseTokenRecognizer<T, String> {
     private int index = -1;
 
     private boolean matchFailure = false;
 
-    public IdentifierRecognizer(T aInToken)
-    {
+    public IdentifierRecognizer(T aInToken) {
         super(aInToken);
     }
 
     @Override
-    public MatchResult test(int aInChar, Object aInSyntacticContext)
-    {
+    public MatchResult test(int aInChar, Object aInSyntacticContext) {
         if (matchFailure) {
             return MatchResult.NOT_A_MATCH;
         }
@@ -39,19 +36,15 @@ public class IdentifierRecognizer<T> extends BaseTokenRecognizer<T, String>
         index ++;
         MatchResult lResult;
 
-        if (index == 0)
-        {
+        if (index == 0) {
             lResult = Character.isJavaIdentifierStart(aInChar) ?
                 MatchResult.MATCH : MatchResult.NOT_A_MATCH;
-        }
-        else
-        {
+        } else {
             lResult = Character.isJavaIdentifierPart(aInChar) ?
                 MatchResult.MATCH : MatchResult.NOT_A_MATCH;
         }
 
-        if (lResult == MatchResult.NOT_A_MATCH)
-        {
+        if (lResult == MatchResult.NOT_A_MATCH) {
             matchFailure = true;
         }
 
@@ -59,8 +52,7 @@ public class IdentifierRecognizer<T> extends BaseTokenRecognizer<T, String>
     }
 
     @Override
-    public void reset()
-    {
+    public void reset() {
         super.reset();
         index = -1;
         matchFailure = false;

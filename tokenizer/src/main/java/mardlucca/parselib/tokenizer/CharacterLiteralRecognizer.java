@@ -23,8 +23,7 @@ import org.apache.commons.text.StringEscapeUtils;
 import java.util.Arrays;
 
 public class CharacterLiteralRecognizer<T>
-        extends BaseTokenRecognizer<T, Character>
-{
+        extends BaseTokenRecognizer<T, Character> {
     private static final char DEFAULT_ESCAPE_CHARACTER = '\\';
 
     private static final char DEFAULT_DELIMITER_CHARACTER = '\'';
@@ -40,8 +39,7 @@ public class CharacterLiteralRecognizer<T>
 
     private State state = State.INITIAL;
 
-    public CharacterLiteralRecognizer(T aInToken)
-    {
+    public CharacterLiteralRecognizer(T aInToken) {
         this(DEFAULT_ESCAPE_CHARACTER, DEFAULT_DELIMITER_CHARACTER,
             DEFAULT_ESCAPE_SEQUENCES, aInToken);
     }
@@ -50,8 +48,7 @@ public class CharacterLiteralRecognizer<T>
         char aInEscapeCharacter,
         char aInDelimiterCharacter,
         char[] aInEscapeSequences,
-        T aInToken)
-    {
+        T aInToken) {
         super(aInToken);
         escapeCharacter = aInEscapeCharacter;
         delimiterCharacter = aInDelimiterCharacter;
@@ -60,10 +57,8 @@ public class CharacterLiteralRecognizer<T>
     }
 
     @Override
-    public MatchResult test(int aInChar, Object aInSyntacticContext)
-    {
-        switch (state)
-        {
+    public MatchResult test(int aInChar, Object aInSyntacticContext) {
+        switch (state) {
             case INITIAL:
                 return handleInitialState(aInChar);
             case READING_CHARACTER:
@@ -79,10 +74,8 @@ public class CharacterLiteralRecognizer<T>
         return failure(null);
     }
 
-    private MatchResult handleInitialState(int aInChar)
-    {
-        if (delimiterCharacter == aInChar)
-        {
+    private MatchResult handleInitialState(int aInChar) {
+        if (delimiterCharacter == aInChar) {
             state = State.READING_CHARACTER;
             return MatchResult.PARTIAL_MATCH;
         }
@@ -91,20 +84,16 @@ public class CharacterLiteralRecognizer<T>
     }
 
 
-    private MatchResult handleReadingCharacterState(int aInChar)
-    {
-        if (delimiterCharacter == aInChar)
-        {
+    private MatchResult handleReadingCharacterState(int aInChar) {
+        if (delimiterCharacter == aInChar) {
             // empty character literal does not exist
             return failure("Empty character literal is not valid");
         }
-        if (escapeCharacter == aInChar)
-        {
+        if (escapeCharacter == aInChar) {
             state = State.ESCAPE_SEQUENCE;
             return MatchResult.PARTIAL_MATCH;
         }
-        if (aInChar == '\n' || aInChar == -1)
-        {
+        if (aInChar == '\n' || aInChar == -1) {
             return failure("Unterminated character literal");
         }
 
@@ -112,26 +101,21 @@ public class CharacterLiteralRecognizer<T>
         return MatchResult.PARTIAL_MATCH;
     }
 
-    private MatchResult handleEscapeSequenceState(int aInChar)
-    {
-        if (Arrays.binarySearch(escapeSequences, (char)aInChar) >= 0)
-        {
+    private MatchResult handleEscapeSequenceState(int aInChar) {
+        if (Arrays.binarySearch(escapeSequences, (char)aInChar) >= 0) {
             state = State.READING_FINAL_DELIMITER;
             return MatchResult.PARTIAL_MATCH;
         }
         return failure("Not a valid escape sequence");
     }
 
-    private MatchResult handleReadingFinalDelimiterState(int aInChar)
-    {
-        if (delimiterCharacter == aInChar)
-        {
+    private MatchResult handleReadingFinalDelimiterState(int aInChar) {
+        if (delimiterCharacter == aInChar) {
             state = State.SUCCESS;
             return MatchResult.MATCH;
         }
 
-        if (aInChar == '\n' || aInChar == -1)
-        {
+        if (aInChar == '\n' || aInChar == -1) {
             return failure("Unterminated character literal");
         }
 
@@ -141,29 +125,25 @@ public class CharacterLiteralRecognizer<T>
 
 
     @Override
-    public void reset()
-    {
+    public void reset() {
         super.reset();
         state = State.INITIAL;
     }
 
     @Override
-    public Character getValue(String aInCharSequence)
-    {
+    public Character getValue(String aInCharSequence) {
         String lString = StringEscapeUtils.unescapeJava(
             aInCharSequence.substring(1, aInCharSequence.length() - 1));
         return lString.charAt(0);
     }
 
-    private MatchResult failure(String aInReason)
-    {
+    private MatchResult failure(String aInReason) {
         setFailureReason(aInReason);
         state = State.FAILURE;
         return MatchResult.NOT_A_MATCH;
     }
 
-    private enum State
-    {
+    private enum State {
         INITIAL,
         READING_CHARACTER,
         ESCAPE_SEQUENCE,

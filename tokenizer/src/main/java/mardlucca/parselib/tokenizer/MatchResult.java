@@ -18,8 +18,7 @@
 
 package mardlucca.parselib.tokenizer;
 
-public enum MatchResult
-{
+public enum MatchResult {
     MATCH,
     PARTIAL_MATCH,
     NOT_A_MATCH

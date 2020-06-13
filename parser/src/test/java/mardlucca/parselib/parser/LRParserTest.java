@@ -33,14 +33,12 @@ import static java.util.Arrays.asList;
 import static mardlucca.parselib.tokenizer.Recognizers.*;
 import static org.junit.Assert.*;
 
-public class LRParserTest
-{
+public class LRParserTest {
     private static List<String> reducedProductions = new ArrayList<>();
     private static BasicTokenizer.Builder<TestToken> builder;
 
     @BeforeClass
-    public static void beforeClass()
-    {
+    public static void beforeClass() {
         builder = new BasicTokenizer.Builder<TestToken>()
             .recognize(identifiers(TestToken.IDENTIFIER))
             .recognize(numbers(TestToken.NUMBER))
@@ -54,8 +52,7 @@ public class LRParserTest
     }
 
     @Test
-    public void testSimpleGrammar1() throws Exception
-    {
+    public void testSimpleGrammar1() throws Exception {
         Map<String, Integer> lMap = new HashMap<>();
         Parser lParser = new SimpleTestTable(lMap).buildParser(builder::build);
         ParseResult lInvocation = lParser.parse("x = 20");
@@ -65,8 +62,7 @@ public class LRParserTest
     }
 
     @Test
-    public void testSimpleGrammar2() throws Exception
-    {
+    public void testSimpleGrammar2() throws Exception {
         Map<String, Integer> lMap = new HashMap<>();
         lMap.put("y", 10);
         Parser lParser = new SimpleTestTable(lMap).buildParser(builder::build);
@@ -77,8 +73,7 @@ public class LRParserTest
     }
 
     @Test
-    public void testSimpleGrammar3() throws Exception
-    {
+    public void testSimpleGrammar3() throws Exception {
         Map<String, Integer> lMap = new HashMap<>();
         lMap.put("y", 10);
         Parser lParser = new SimpleTestTable(lMap).buildParser(builder::build);
@@ -89,8 +84,7 @@ public class LRParserTest
     }
 
     @Test
-    public void testSimpleGrammarErrorSpecificError() throws Exception
-    {
+    public void testSimpleGrammarErrorSpecificError() throws Exception {
         Parser lParser = new SimpleTestTable(new HashMap<>())
                 .buildParser(builder::build);
         List<String> lErrors = lParser.parse("x 20").getErrors();
@@ -100,8 +94,7 @@ public class LRParserTest
     }
 
     @Test
-    public void testSimpleGrammarErrorGenericError() throws Exception
-    {
+    public void testSimpleGrammarErrorGenericError() throws Exception {
         Parser lParser = new SimpleTestTable(new HashMap<>())
                 .buildParser(builder::build);
 
@@ -112,8 +105,7 @@ public class LRParserTest
     }
 
     @Test
-    public void testSimpleTestParser2() throws Exception
-    {
+    public void testSimpleTestParser2() throws Exception {
         Parser lParser = new SimpleTestTable2().buildParser(builder::build);
         ParseResult lInvocation = lParser.parse("20 = 20");
 
@@ -122,8 +114,7 @@ public class LRParserTest
     }
 
     @Test
-    public void testSimpleTestParser22() throws Exception
-    {
+    public void testSimpleTestParser22() throws Exception {
         Parser lParser = new SimpleTestTable2().buildParser(builder::build);
         ParseResult lInvocation = lParser.parse("20 = ");
 
@@ -142,8 +133,7 @@ public class LRParserTest
      * VAL -> id
      * VAL -> num
      */
-    private static class SimpleTestTable extends LRParsingTable<TestToken>
-    {
+    private static class SimpleTestTable extends LRParsingTable<TestToken> {
         private static Grammar grammar = new Grammar()
             .addProduction("S'", "S")
             .addProduction("S", TestToken.IDENTIFIER, "S2")
@@ -152,8 +142,7 @@ public class LRParserTest
             .addProduction("VAL", TestToken.IDENTIFIER)
             .addProduction("VAL", TestToken.NUMBER);
 
-        private SimpleTestTable(Map<String, Integer> aInMap)
-        {
+        private SimpleTestTable(Map<String, Integer> aInMap) {
             super(grammar);
             newState()      // 0
                 .shift(TestToken.IDENTIFIER, 2)
@@ -190,33 +179,26 @@ public class LRParserTest
         }
 
         private static void setListeners(
-                Map<String, Integer> aInVariables)
-        {
+                Map<String, Integer> aInVariables) {
             grammar.onDefaultReduce((aInProduction, aInValues) -> null)
                     .onReduce(grammar.getProduction(1).toString(),
-                            ((aInProduction, aInValues) ->
-                    {
+                            ((aInProduction, aInValues) -> {
                         String lVariable = (String)
                                 ((Token<TestToken, ?>)aInValues[0]).getValue();
                         Object lValue = aInValues[1];
-                        if (lValue != null)
-                        {
+                        if (lValue != null) {
                             aInVariables.put(lVariable, (Integer) lValue);
-                        }
-                        else
-                        {
+                        } else {
                             lValue = aInVariables.get(lVariable);
                         }
                         return lValue;
                     }))
                     .onReduce(2, (aInProduction, aInValues) -> aInValues[1])
-                    .onReduce(4, (aInProduction, aInValues) ->
-                    {
+                    .onReduce(4, (aInProduction, aInValues) -> {
                         String lVariable = (String)
                                 ((Token<TestToken, ?>)aInValues[0]).getValue();
                         Object lValue = aInVariables.get(lVariable);
-                        if (lValue == null)
-                        {
+                        if (lValue == null) {
                             throw new RuntimeException("Unknown variable");
                         }
                         return lValue;
@@ -235,8 +217,7 @@ public class LRParserTest
      * A -> num
      * B -> num
      */
-    private static class SimpleTestTable2 extends LRParsingTable<TestToken>
-    {
+    private static class SimpleTestTable2 extends LRParsingTable<TestToken> {
         private static Grammar grammar = new Grammar()
                 .addProduction("S'", "S")
                 .addProduction("S", "A", TestToken.ASSIGNMENT)
@@ -247,8 +228,7 @@ public class LRParserTest
                 .onDefaultReduce(new TestParserListener(reducedProductions));
 
 
-        private SimpleTestTable2()
-        {
+        private SimpleTestTable2() {
             super(grammar);
 
             newState()      // 0

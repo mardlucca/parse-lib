@@ -18,12 +18,10 @@
 
 package mardlucca.parselib.tokenizer;
 
-public interface TokenRecognizer<T, V>
-{
+public interface TokenRecognizer<T, V> {
     MatchResult test(int aInChar, Object aInSyntacticContext);
 
-    default MatchResult test(int aInChar)
-    {
+    default MatchResult test(int aInChar) {
         return test(aInChar, null);
     }
 

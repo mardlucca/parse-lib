@@ -18,8 +18,7 @@
 
 package mardlucca.parselib.parser;
 
-public enum TestToken
-{
+public enum TestToken {
     ASSIGNMENT("="),
     CHARACTER("char"),
     CLOSE_PARENTHESIS(")"),
@@ -36,19 +35,15 @@ public enum TestToken
     STRING("str"),
     SLASH("/");
 
-    TestToken(String aInDisplay)
-    {
+    TestToken(String aInDisplay) {
         display = aInDisplay;
     }
 
     private String display;
 
-    public static TestToken parse(String aInDisplayValue)
-    {
-        for (TestToken lToken : TestToken.values())
-        {
-            if (lToken.display.equals(aInDisplayValue))
-            {
+    public static TestToken parse(String aInDisplayValue) {
+        for (TestToken lToken : TestToken.values()) {
+            if (lToken.display.equals(aInDisplayValue)) {
                 return lToken;
             }
         }
@@ -56,8 +51,7 @@ public enum TestToken
     }
 
     @Override
-    public String toString()
-    {
+    public String toString() {
         return display;
     }
 }

@@ -22,8 +22,7 @@ import org.apache.commons.text.StringEscapeUtils;
 
 import java.util.Arrays;
 
-public class StringLiteralRecognizer<T> extends BaseTokenRecognizer<T, String>
-{
+public class StringLiteralRecognizer<T> extends BaseTokenRecognizer<T, String> {
     private static final char DEFAULT_ESCAPE_CHARACTER = '\\';
 
     private static final char DEFAULT_DELIMITER_CHARACTER = '\"';
@@ -39,24 +38,21 @@ public class StringLiteralRecognizer<T> extends BaseTokenRecognizer<T, String>
 
     private State state = State.INITIAL;
 
-    public StringLiteralRecognizer(T aInToken)
-    {
+    public StringLiteralRecognizer(T aInToken) {
         this(DEFAULT_ESCAPE_CHARACTER, DEFAULT_DELIMITER_CHARACTER,
             DEFAULT_ESCAPE_SEQUENCES, aInToken);
     }
 
-    public StringLiteralRecognizer(T aInToken, char aInDelimiterCharacter)
-    {
+    public StringLiteralRecognizer(T aInToken, char aInDelimiterCharacter) {
         this(DEFAULT_ESCAPE_CHARACTER, aInDelimiterCharacter,
                 DEFAULT_ESCAPE_SEQUENCES, aInToken);
     }
 
     public StringLiteralRecognizer(
-        char aInEscapeCharacter,
-        char aInDelimiterCharacter,
-        char[] aInEscapeSequences,
-        T aInToken)
-    {
+            char aInEscapeCharacter,
+            char aInDelimiterCharacter,
+            char[] aInEscapeSequences,
+            T aInToken) {
         super(aInToken);
         escapeCharacter = aInEscapeCharacter;
         delimiterCharacter = aInDelimiterCharacter;
@@ -67,10 +63,8 @@ public class StringLiteralRecognizer<T> extends BaseTokenRecognizer<T, String>
     }
 
     @Override
-    public MatchResult test(int aInChar, Object aInSyntacticContext)
-    {
-        switch (state)
-        {
+    public MatchResult test(int aInChar, Object aInSyntacticContext) {
+        switch (state) {
             case INITIAL:
                 return handleInitialState(aInChar);
             case READING_STRING:
@@ -83,10 +77,8 @@ public class StringLiteralRecognizer<T> extends BaseTokenRecognizer<T, String>
         return failure(null);
     }
 
-    private MatchResult handleInitialState(int aInChar)
-    {
-        if (delimiterCharacter == aInChar)
-        {
+    private MatchResult handleInitialState(int aInChar) {
+        if (delimiterCharacter == aInChar) {
             state = State.READING_STRING;
             return MatchResult.PARTIAL_MATCH;
         }
@@ -96,20 +88,16 @@ public class StringLiteralRecognizer<T> extends BaseTokenRecognizer<T, String>
     }
 
 
-    private MatchResult handleReadingStringState(int aInChar)
-    {
-        if (delimiterCharacter == aInChar)
-        {
+    private MatchResult handleReadingStringState(int aInChar) {
+        if (delimiterCharacter == aInChar) {
             state = State.SUCCESS;
             return MatchResult.MATCH;
         }
-        if (escapeCharacter == aInChar)
-        {
+        if (escapeCharacter == aInChar) {
             state = State.ESCAPE_SEQUENCE;
             return MatchResult.PARTIAL_MATCH;
         }
-        if (aInChar == '\n' || aInChar == -1)
-        {
+        if (aInChar == '\n' || aInChar == -1) {
             return failure("Unterminated string literal");
         }
 
@@ -117,10 +105,8 @@ public class StringLiteralRecognizer<T> extends BaseTokenRecognizer<T, String>
         return MatchResult.PARTIAL_MATCH;
     }
 
-    private MatchResult handleEscapeSequenceState(int aInChar)
-    {
-        if (Arrays.binarySearch(escapeSequences, (char) aInChar) >= 0)
-        {
+    private MatchResult handleEscapeSequenceState(int aInChar) {
+        if (Arrays.binarySearch(escapeSequences, (char) aInChar) >= 0) {
             state = State.READING_STRING;
             return MatchResult.PARTIAL_MATCH;
         }
@@ -128,17 +114,14 @@ public class StringLiteralRecognizer<T> extends BaseTokenRecognizer<T, String>
     }
 
     @Override
-    public void reset()
-    {
+    public void reset() {
         super.reset();
         state = State.INITIAL;
     }
 
     @Override
-    public String getValue(String aInCharSequence)
-    {
-        if (aInCharSequence.length() < 3)
-        {
+    public String getValue(String aInCharSequence) {
+        if (aInCharSequence.length() < 3) {
             return "";
         }
 
@@ -146,15 +129,13 @@ public class StringLiteralRecognizer<T> extends BaseTokenRecognizer<T, String>
             aInCharSequence.substring(1, aInCharSequence.length() - 1));
     }
 
-    private MatchResult failure(String aInReason)
-    {
+    private MatchResult failure(String aInReason) {
         setFailureReason(aInReason);
         state = State.FAILURE;
         return MatchResult.NOT_A_MATCH;
     }
 
-    private enum State
-    {
+    private enum State {
         INITIAL,
         READING_STRING,
         ESCAPE_SEQUENCE,

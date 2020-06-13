@@ -18,37 +18,32 @@
 
 package mardlucca.parselib.tokenizer;
 
-public abstract class BaseTokenRecognizer<T, V> implements TokenRecognizer<T, V>
-{
+public abstract class BaseTokenRecognizer<T, V>
+        implements TokenRecognizer<T, V> {
     private T token;
 
     private String failureReason;
 
-    public BaseTokenRecognizer(T aInToken)
-    {
+    public BaseTokenRecognizer(T aInToken) {
         token = aInToken;
     }
 
     @Override
-    public Token<T, V> getToken(String aInCharSequence)
-    {
+    public Token<T, V> getToken(String aInCharSequence) {
         return new Token<>(token, aInCharSequence, getValue(aInCharSequence));
     }
 
     @Override
-    public String getFailureReason()
-    {
+    public String getFailureReason() {
         return failureReason;
     }
 
-    public void setFailureReason(String aInFailureReason)
-    {
+    public void setFailureReason(String aInFailureReason) {
         failureReason = aInFailureReason;
     }
 
     @Override
-    public void reset()
-    {
+    public void reset() {
         failureReason = null;
     }
 

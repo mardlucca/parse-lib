@@ -37,20 +37,17 @@ public class LRParsingTable<T> {
 
     private Grammar grammar;
 
-    protected LRParsingTable(Grammar aInGrammar)
-    {
+    protected LRParsingTable(Grammar aInGrammar) {
         grammar = aInGrammar;
     }
 
-    public State newState()
-    {
+    public State newState() {
         State lNewState = new State(stateSequence++);
         states.add(lNewState);
         return lNewState;
     }
 
-    public State getState(int aInIndex)
-    {
+    public State getState(int aInIndex) {
         return states.get(aInIndex);
     }
 
@@ -60,21 +57,18 @@ public class LRParsingTable<T> {
     }
 
     public LRParsingTable<T> onReduce(
-            int aInProduction, ReduceListener aInReduceListener)
-    {
+            int aInProduction, ReduceListener aInReduceListener) {
         grammar.onReduce(aInProduction, aInReduceListener);
         return this;
     }
 
     public LRParsingTable<T> onReduce(
-            String aInProductionString, ReduceListener aInReduceListener)
-    {
+            String aInProductionString, ReduceListener aInReduceListener) {
         grammar.onReduce(aInProductionString, aInReduceListener);
         return this;
     }
 
-    public Parser buildParser(TokenizerFactory<T> aInTokenizerFactory)
-    {
+    public Parser buildParser(TokenizerFactory<T> aInTokenizerFactory) {
         return aInReader -> {
             Tokenizer<T> lTokenizer =
                     aInTokenizerFactory.newTokenizer(aInReader);
@@ -84,11 +78,9 @@ public class LRParsingTable<T> {
             lInvocation.currentToken = lTokenizer.nextToken(
                     lInvocation.currentState);
             Action lNextAction;
-            do
-            {
+            do {
                 lNextAction = lInvocation.nextAction();
-                if (lNextAction == null)
-                {
+                if (lNextAction == null) {
                     // no action found, so we're in error
                     lNextAction = defaultErrorAction;
                 }
@@ -99,48 +91,40 @@ public class LRParsingTable<T> {
         };
     }
 
-    public class State
-    {
+    public class State {
         private int number;
         private Map<String, GotoAction> goTos = new HashMap<>();
         private Map<T, Action> actions = new HashMap<>();
 
-        private State(int aInNumber)
-        {
+        private State(int aInNumber) {
             number = aInNumber;
         }
 
-        public int getNumber()
-        {
+        public int getNumber() {
             return number;
         }
 
-        public State accept(T aInTerminal)
-        {
+        public State accept(T aInTerminal) {
             actions.put(aInTerminal, new AcceptAction());
             return this;
         }
 
-        public State error(T aInTerminal, String aInMessage)
-        {
+        public State error(T aInTerminal, String aInMessage) {
             actions.put(aInTerminal, new ErrorAction(aInMessage));
             return this;
         }
 
-        public State goTo(String aInSymbol, int aInState)
-        {
+        public State goTo(String aInSymbol, int aInState) {
             goTos.put(aInSymbol, new GotoAction(aInState));
             return this;
         }
 
-        public State shift(T aInTerminal, int aInState)
-        {
+        public State shift(T aInTerminal, int aInState) {
             actions.put(aInTerminal, new ShiftAction(aInState));
             return this;
         }
 
-        public State shiftIf(T aInTerminal, T aInLookAhead, int aInState)
-        {
+        public State shiftIf(T aInTerminal, T aInLookAhead, int aInState) {
             Action lPreviousAction = actions.get(aInTerminal);
 
             actions.put(aInTerminal, new ConditionalAction(
@@ -153,15 +137,13 @@ public class LRParsingTable<T> {
             return this;
         }
 
-        public State reduce(T aInTerminal, int aInProduction)
-        {
+        public State reduce(T aInTerminal, int aInProduction) {
             actions.put(aInTerminal,
                     new ReduceAction(grammar.getProduction(aInProduction)));
             return this;
         }
 
-        public State reduceIf(T aInTerminal, T aInLookAhead, int aInProduction)
-        {
+        public State reduceIf(T aInTerminal, T aInLookAhead, int aInProduction) {
             Action lPreviousAction = actions.get(aInTerminal);
 
             actions.put(aInTerminal, new ConditionalAction(
@@ -174,61 +156,50 @@ public class LRParsingTable<T> {
             return this;
         }
 
-        public boolean hasAction(T aInTerminal)
-        {
+        public boolean hasAction(T aInTerminal) {
             return actions.containsKey(aInTerminal);
         }
     }
 
-    private abstract class Action
-    {
+    private abstract class Action {
         abstract boolean execute(ParseInvocation aInInvocation)
             throws IOException, UnrecognizedCharacterSequenceException;
     }
 
-    private class AcceptAction extends Action
-    {
-        private AcceptAction()
-        {
+    private class AcceptAction extends Action {
+        private AcceptAction() {
         }
 
         @Override
-        public boolean execute(ParseInvocation aInInvocation)
-        {
+        public boolean execute(ParseInvocation aInInvocation) {
             aInInvocation.value = aInInvocation.symbolStack.pop().getValue();
             return false;
         }
     }
 
-    private class ErrorAction extends Action
-    {
+    private class ErrorAction extends Action {
         private String message;
 
-        private ErrorAction(String aInMessage)
-        {
+        private ErrorAction(String aInMessage) {
             message = aInMessage;
         }
 
         @Override
-        public boolean execute(ParseInvocation aInInvocation)
-        {
+        public boolean execute(ParseInvocation aInInvocation) {
             aInInvocation.errors.add(message);
             return false;
         }
     }
 
-    private class GotoAction extends Action
-    {
+    private class GotoAction extends Action {
         private int state;
 
-        private GotoAction(int aInState)
-        {
+        private GotoAction(int aInState) {
             state = aInState;
         }
 
         @Override
-        public boolean execute(ParseInvocation aInInvocation)
-        {
+        public boolean execute(ParseInvocation aInInvocation) {
             State lNextState = states.get(state);
             aInInvocation.stateStack.push(aInInvocation.currentState);
             aInInvocation.symbolStack.push(aInInvocation.goTo);
@@ -238,25 +209,21 @@ public class LRParsingTable<T> {
         }
 
         @Override
-        public String toString()
-        {
+        public String toString() {
             return "GO" + state;
         }
     }
 
-    private class ShiftAction extends Action
-    {
+    private class ShiftAction extends Action {
         private int state;
 
-        private ShiftAction(int aInState)
-        {
+        private ShiftAction(int aInState) {
             state = aInState;
         }
 
         @Override
         public boolean execute(ParseInvocation aInInvocation)
-            throws IOException, UnrecognizedCharacterSequenceException
-        {
+            throws IOException, UnrecognizedCharacterSequenceException {
             State lNextState = states.get(state);
             aInInvocation.stateStack.push(aInInvocation.currentState);
             aInInvocation.symbolStack.push(
@@ -270,67 +237,57 @@ public class LRParsingTable<T> {
         }
 
         @Override
-        public String toString()
-        {
+        public String toString() {
             return "SFT " + state ;
         }
     }
 
-    private class ReduceAction extends Action
-    {
+    private class ReduceAction extends Action {
         private Grammar.Production production;
 
         private int numberOfSymbols;
 
         ReduceAction(
-                Grammar.Production aInProduction)
-        {
+                Grammar.Production aInProduction) {
             production = aInProduction;
             numberOfSymbols = production.getRightHandSide().length;
         }
 
         @Override
-        public boolean execute(ParseInvocation aInInvocation)
-        {
+        public boolean execute(ParseInvocation aInInvocation) {
             Object[] lValues = new Object[numberOfSymbols];
-            for (int i = numberOfSymbols -1; i >= 0; i--)
-            {
+            for (int i = numberOfSymbols -1; i >= 0; i--) {
                 aInInvocation.currentState = aInInvocation.stateStack.pop();
                 lValues[i] = aInInvocation.symbolStack.pop().getValue();
             }
 
-            try
-            {
+            try {
                 aInInvocation.goTo = new NonTerminal(
                         production.getLeftHandSide(),
                         production.onReduce(production, lValues));
 
                 return true;
             }
-            catch (ParsingException pe)
-            {
+            catch (ParsingException pe) {
                 aInInvocation.errors.add(pe.getMessage());
             }
             return false;
         }
 
         @Override
-        public String toString()
-        {
+        public String toString() {
             return production.toString();
         }
     }
 
-    private class ConditionalAction extends Action
-    {
+    private class ConditionalAction extends Action {
         private T nextToken;
         private Action equalsAction;
         private Action notEqualsAction;
 
         ConditionalAction(T aInNextToken,
                           Action aInEqualsAction,
-                          Action aInNotEqualsAction)
-        {
+                          Action aInNotEqualsAction) {
             nextToken = aInNextToken;
             equalsAction = aInEqualsAction;
             notEqualsAction = aInNotEqualsAction;
@@ -338,21 +295,18 @@ public class LRParsingTable<T> {
 
         @Override
         public boolean execute(ParseInvocation aInInvocation)
-                throws IOException, UnrecognizedCharacterSequenceException
-        {
+                throws IOException, UnrecognizedCharacterSequenceException {
             Token<T, ?> lNextToken =
                     aInInvocation.tokenizer.peekToken(
                             aInInvocation.currentState);
-            if (Objects.equals(nextToken, lNextToken.getId()))
-            {
+            if (Objects.equals(nextToken, lNextToken.getId())) {
                 return equalsAction.execute(aInInvocation);
             }
             return notEqualsAction.execute(aInInvocation);
         }
     }
 
-    public class ParseInvocation implements ParseResult
-    {
+    public class ParseInvocation implements ParseResult {
         private Deque<Symbol<?>> symbolStack = new ArrayDeque<>();
 
         private Deque<State> stateStack = new ArrayDeque<>();
@@ -372,14 +326,12 @@ public class LRParsingTable<T> {
 
         private ParseInvocation(
             State aInCurrentState,
-            Tokenizer<T> aInTokenizer)
-        {
+            Tokenizer<T> aInTokenizer) {
             currentState = aInCurrentState;
             tokenizer = aInTokenizer;
         }
 
-        private Action nextAction()
-        {
+        private Action nextAction() {
             // if there is a go to pending, we do that first otherwise we
             // process the next action
             return goTo != null
@@ -387,66 +339,55 @@ public class LRParsingTable<T> {
                 : currentState.actions.get(currentToken.getId());
         }
 
-        public Object getValue()
-        {
+        public Object getValue() {
             return value;
         }
 
-        public List<String> getErrors()
-        {
+        public List<String> getErrors() {
             return errors;
         }
     }
 
-    private interface Symbol<T>
-    {
+    private interface Symbol<T> {
         T getId();
 
         Object getValue();
     }
 
-    private static class Terminal<T> implements Symbol<T>
-    {
+    private static class Terminal<T> implements Symbol<T> {
         private Token<T, ?> value;
 
-        Terminal(Token<T, ?> aInValue)
-        {
+        Terminal(Token<T, ?> aInValue) {
             value = aInValue;
         }
 
-        public T getId()
-        {
+        public T getId() {
             return value.getId();
         }
 
         @Override
-        public Token<T, ?> getValue()
-        {
+        public Token<T, ?> getValue() {
             return value;
         }
     }
 
-    private static class NonTerminal implements Symbol<String>
-    {
+    private static class NonTerminal implements Symbol<String> {
         private String id;
 
         private Object value;
 
-        NonTerminal(String aInId, Object aInValue)
-        {
+        NonTerminal(String aInId, Object aInValue) {
             id = aInId;
             value = aInValue;
         }
 
         @Override
-        public String getId()
-        {
+        public String getId() {
             return id;
         }
 
         @Override
-        public Object getValue()
-        {
+        public Object getValue() {
             return value;
         }
     }

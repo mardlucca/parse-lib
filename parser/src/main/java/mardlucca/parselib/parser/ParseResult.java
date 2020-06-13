@@ -20,8 +20,7 @@ package mardlucca.parselib.parser;
 
 import java.util.List;
 
-public interface ParseResult
-{
+public interface ParseResult {
     Object getValue();
 
     List<String> getErrors();

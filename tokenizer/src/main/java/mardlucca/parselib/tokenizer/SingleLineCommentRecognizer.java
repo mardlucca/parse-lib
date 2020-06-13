@@ -21,8 +21,7 @@ package mardlucca.parselib.tokenizer;
 import org.apache.commons.lang3.StringUtils;
 
 public class SingleLineCommentRecognizer<T>
-        extends BaseTokenRecognizer<T, String>
-{
+        extends BaseTokenRecognizer<T, String> {
     public static final String DEFAULT_CHAR_SEQUENCE = "//";
 
     private State state;
@@ -31,8 +30,7 @@ public class SingleLineCommentRecognizer<T>
 
     private int index;
 
-    public SingleLineCommentRecognizer(String aInCharSequence)
-    {
+    public SingleLineCommentRecognizer(String aInCharSequence) {
         super(null);
         charSequence = StringUtils.isBlank(aInCharSequence)
                 ? DEFAULT_CHAR_SEQUENCE
@@ -40,10 +38,8 @@ public class SingleLineCommentRecognizer<T>
     }
 
     @Override
-    public MatchResult test(int aInChar, Object aInSyntacticContext)
-    {
-        switch (state)
-        {
+    public MatchResult test(int aInChar, Object aInSyntacticContext) {
+        switch (state) {
             case READING_SEQUENCE:
                 return handleReadingCharSequenceState(aInChar);
             case READING_COMMENT_LINE:
@@ -53,13 +49,10 @@ public class SingleLineCommentRecognizer<T>
         return MatchResult.NOT_A_MATCH;
     }
 
-    private MatchResult handleReadingCharSequenceState(int aInChar)
-    {
-        if (aInChar == charSequence.charAt(index))
-        {
+    private MatchResult handleReadingCharSequenceState(int aInChar) {
+        if (aInChar == charSequence.charAt(index)) {
             index++;
-            if (index >= charSequence.length())
-            {
+            if (index >= charSequence.length()) {
                 state = State.READING_COMMENT_LINE;
                 return MatchResult.MATCH;
 
@@ -71,10 +64,8 @@ public class SingleLineCommentRecognizer<T>
         return MatchResult.NOT_A_MATCH;
     }
 
-    private MatchResult handleReadingCommentLineState(int aInChar)
-    {
-        if (aInChar == '\n' || aInChar == -1)
-        {
+    private MatchResult handleReadingCommentLineState(int aInChar) {
+        if (aInChar == '\n' || aInChar == -1) {
             state = State.FINISHED;
 
             // new line will be removed in next invocation by the whitespace
@@ -85,16 +76,14 @@ public class SingleLineCommentRecognizer<T>
     }
 
     @Override
-    public void reset()
-    {
+    public void reset() {
         super.reset();
         state = State.READING_SEQUENCE;
         index = 0;
     }
 
     @Override
-    public String getValue(String aInCharSequence)
-    {
+    public String getValue(String aInCharSequence) {
         return null;
     }
 
@@ -103,8 +92,7 @@ public class SingleLineCommentRecognizer<T>
         return true;
     }
 
-    private enum State
-    {
+    private enum State {
         READING_SEQUENCE,
         READING_COMMENT_LINE,
         FINISHED

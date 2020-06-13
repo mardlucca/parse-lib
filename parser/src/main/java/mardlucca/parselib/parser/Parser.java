@@ -26,8 +26,7 @@ import java.io.StringReader;
 
 public interface Parser {
     default ParseResult parse(String aInString)
-            throws IOException, UnrecognizedCharacterSequenceException
-    {
+            throws IOException, UnrecognizedCharacterSequenceException {
         return parse(new StringReader(aInString));
     }
 

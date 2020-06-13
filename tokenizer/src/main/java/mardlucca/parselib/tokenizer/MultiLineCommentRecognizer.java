@@ -21,8 +21,7 @@ package mardlucca.parselib.tokenizer;
 import org.apache.commons.lang3.StringUtils;
 
 public class MultiLineCommentRecognizer<T>
-        extends BaseTokenRecognizer<T, String>
-{
+        extends BaseTokenRecognizer<T, String> {
     public static final String DEFAULT_START_CHAR_SEQUENCE = "/*";
 
     private State state;
@@ -37,8 +36,7 @@ public class MultiLineCommentRecognizer<T>
 
     public MultiLineCommentRecognizer(
             String aInInitialCharSequence,
-            String aInEndCharSequence)
-    {
+            String aInEndCharSequence) {
         super(null);
         initialCharSequence = StringUtils.isBlank(aInInitialCharSequence)
                 ? DEFAULT_START_CHAR_SEQUENCE
@@ -49,10 +47,8 @@ public class MultiLineCommentRecognizer<T>
     }
 
     @Override
-    public MatchResult test(int aInChar, Object aInSyntacticContext)
-    {
-        switch (state)
-        {
+    public MatchResult test(int aInChar, Object aInSyntacticContext) {
+        switch (state) {
             case READING_START_SEQUENCE:
                 return handleReadingIntialCharSequenceState(aInChar);
             case LOOKING_FOR_END_SEQUENCE:
@@ -62,13 +58,10 @@ public class MultiLineCommentRecognizer<T>
         return MatchResult.NOT_A_MATCH;
     }
 
-    private MatchResult handleReadingIntialCharSequenceState(int aInChar)
-    {
-        if (aInChar == initialCharSequence.charAt(index))
-        {
+    private MatchResult handleReadingIntialCharSequenceState(int aInChar) {
+        if (aInChar == initialCharSequence.charAt(index)) {
             index++;
-            if (index >= initialCharSequence.length())
-            {
+            if (index >= initialCharSequence.length()) {
                 state = State.LOOKING_FOR_END_SEQUENCE;
                 substring = "";
             }
@@ -79,24 +72,20 @@ public class MultiLineCommentRecognizer<T>
         return MatchResult.NOT_A_MATCH;
     }
 
-    private MatchResult handleLookingForEndSequenceState(int aInChar)
-    {
-        if (aInChar == -1)
-        {
+    private MatchResult handleLookingForEndSequenceState(int aInChar) {
+        if (aInChar == -1) {
             setFailureReason("Unclosed comment");
             state = State.FINISHED;
             return MatchResult.NOT_A_MATCH;
         }
 
-        if (substring.length() == endCharSequence.length())
-        {
+        if (substring.length() == endCharSequence.length()) {
             // discard first character
             substring = substring.substring(1);
         }
         substring += (char) aInChar;
 
-        if (substring.equals(endCharSequence))
-        {
+        if (substring.equals(endCharSequence)) {
             state = State.FINISHED;
             return MatchResult.MATCH;
         }
@@ -105,16 +94,14 @@ public class MultiLineCommentRecognizer<T>
     }
 
     @Override
-    public void reset()
-    {
+    public void reset() {
         super.reset();
         state = State.READING_START_SEQUENCE;
         index = 0;
     }
 
     @Override
-    public String getValue(String aInCharSequence)
-    {
+    public String getValue(String aInCharSequence) {
         return null;
     }
 
@@ -123,8 +110,7 @@ public class MultiLineCommentRecognizer<T>
         return true;
     }
 
-    private enum State
-    {
+    private enum State {
         READING_START_SEQUENCE,
         LOOKING_FOR_END_SEQUENCE,
         FINISHED

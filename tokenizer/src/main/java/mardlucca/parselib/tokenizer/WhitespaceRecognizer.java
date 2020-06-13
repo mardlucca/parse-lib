@@ -18,27 +18,22 @@
 
 package mardlucca.parselib.tokenizer;
 
-public class WhitespaceRecognizer<T> extends BaseTokenRecognizer<T, String>
-{
+public class WhitespaceRecognizer<T> extends BaseTokenRecognizer<T, String> {
     private boolean reading = true;
 
-    public WhitespaceRecognizer()
-    {
+    public WhitespaceRecognizer() {
         super(null);
     }
 
     @Override
-    public MatchResult test(int aInChar, Object aInSyntacticContext)
-    {
-        if (!reading)
-        {
+    public MatchResult test(int aInChar, Object aInSyntacticContext) {
+        if (!reading) {
             return MatchResult.NOT_A_MATCH;
         }
 
         if (aInChar == '\n'
             || aInChar == '\t'
-            || aInChar == ' ')
-        {
+            || aInChar == ' ') {
             return MatchResult.MATCH;
         }
 
@@ -47,8 +42,7 @@ public class WhitespaceRecognizer<T> extends BaseTokenRecognizer<T, String>
     }
 
     @Override
-    public void reset()
-    {
+    public void reset() {
         super.reset();
         reading = true;
     }

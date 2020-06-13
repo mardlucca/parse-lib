@@ -18,41 +18,34 @@
 
 package mardlucca.parselib.tokenizer;
 
-public class Token<T, V>
-{
+public class Token<T, V> {
     private T id;
 
     private String charSequence;
 
     private V value;
 
-    Token(T aInId, String aInCharSequence, V aInValue)
-    {
+    Token(T aInId, String aInCharSequence, V aInValue) {
         id = aInId;
         charSequence = aInCharSequence;
         value = aInValue;
     }
 
-    public T getId()
-    {
+    public T getId() {
         return id;
     }
 
-    public String getCharSequence()
-    {
+    public String getCharSequence() {
         return charSequence;
     }
 
-    public V getValue()
-    {
+    public V getValue() {
         return value;
     }
 
     @Override
-    public String toString()
-    {
-        if (charSequence == null)
-        {
+    public String toString() {
+        if (charSequence == null) {
             return "Token{id=" + id + "}";
         }
         return "Token{" +

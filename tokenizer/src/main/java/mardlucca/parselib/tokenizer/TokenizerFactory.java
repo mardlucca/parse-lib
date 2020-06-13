@@ -19,7 +19,6 @@ package mardlucca.parselib.tokenizer;
 
 import java.io.Reader;
 
-public interface TokenizerFactory<T>
-{
+public interface TokenizerFactory<T> {
     Tokenizer<T> newTokenizer(Reader aInReader);
 }

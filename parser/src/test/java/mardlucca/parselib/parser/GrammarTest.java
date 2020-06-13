@@ -25,8 +25,7 @@ import static org.junit.Assert.*;
 public class GrammarTest {
 
     @Test
-    public void testToString()
-    {
+    public void testToString() {
         Grammar lGrammar = new Grammar()
                 .addProduction(
                         "S'",
