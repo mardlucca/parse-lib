@@ -25,7 +25,7 @@ import static org.junit.Assert.*;
 public class NumberLiteralRecognizerTest
 {
     private static final NumberLiteralRecognizer recognizer =
-        new NumberLiteralRecognizer("N");
+        new NumberLiteralRecognizer<>("N");
 
     @Test
     public void testIntegralNumbers()

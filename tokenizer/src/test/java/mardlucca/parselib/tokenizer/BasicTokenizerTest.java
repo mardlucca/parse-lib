@@ -79,7 +79,7 @@ public class BasicTokenizerTest
         test(lTokenizer.nextToken(), TestToken.ASSIGNMENT,
             "=", "=", String.class);
         test(lTokenizer.nextToken(), TestToken.NUMBER,
-            "20l", 20l, Long.class);
+            "20l", 20L, Long.class);
         test(lTokenizer.nextToken(), TestToken.IDENTIFIER,
             "b", "b", String.class);
         test(lTokenizer.nextToken(), TestToken.ASSIGNMENT,
@@ -167,7 +167,7 @@ public class BasicTokenizerTest
 
     @Test
     public void testUnrecognizedSequence2()
-        throws IOException, UnrecognizedCharacterSequenceException
+        throws IOException
     {
         Reader lReader =
             new StringReader("\"unterminated string\n12.3f");

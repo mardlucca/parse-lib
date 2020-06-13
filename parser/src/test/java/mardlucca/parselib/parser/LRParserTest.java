@@ -178,6 +178,8 @@ public class LRParserTest {
             setListeners(aInMap);
         }
 
+
+        @SuppressWarnings("unchecked")
         private static void setListeners(
                 Map<String, Integer> aInVariables) {
             grammar.onDefaultReduce((aInProduction, aInValues) -> null)

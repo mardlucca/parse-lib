@@ -28,7 +28,7 @@ public class WhitespaceRecognizerTest
         new WhitespaceRecognizer();
 
     @Test
-    public void test1() throws Exception
+    public void test1()
     {
         test(" \t\n \t\nx", MatchResult.MATCH, MatchResult.MATCH,
             MatchResult.MATCH, MatchResult.MATCH, MatchResult.MATCH,

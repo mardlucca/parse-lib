@@ -29,7 +29,7 @@ import static org.junit.Assert.assertEquals;
 public class StringLiteralRecognizerTest
 {
     private static StringLiteralRecognizer recognizer =
-        new StringLiteralRecognizer("S");
+        new StringLiteralRecognizer<>("S");
 
     @Test
     public void testSuccessCases()
@@ -108,7 +108,7 @@ public class StringLiteralRecognizerTest
         }
     }
 
-    static void testError(String aInString, String aInExpectedMessage)
+    private static void testError(String aInString, String aInExpectedMessage)
     {
         recognizer.reset();
         Reader in = new StringReader(aInString);

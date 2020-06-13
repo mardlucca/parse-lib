@@ -131,6 +131,7 @@ public class LRParsingTableBuilder<T> {
                         }
 
                         if (lIsTerminalFlags[i - 1]) {
+                            @SuppressWarnings("unchecked")
                             T lTerminal = (T) lSymbols[i - 1];
                             if (lParts[i].charAt(0) == 's') {
                                 lState = lState.shift(lTerminal,

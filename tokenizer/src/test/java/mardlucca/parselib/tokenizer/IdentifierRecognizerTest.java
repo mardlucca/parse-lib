@@ -25,7 +25,7 @@ import static org.junit.Assert.*;
 public class IdentifierRecognizerTest
 {
     private static final IdentifierRecognizer recognizer =
-        new IdentifierRecognizer("ID");
+        new IdentifierRecognizer<>("ID");
 
     @Test
     public void testSuccess()

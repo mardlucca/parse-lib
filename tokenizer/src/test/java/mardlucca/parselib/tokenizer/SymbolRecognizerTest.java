@@ -26,7 +26,7 @@ public class SymbolRecognizerTest
 {
 
     @Test
-    public void testSuccess() throws Exception
+    public void testSuccess()
     {
         SymbolRecognizer lRecognizer = Recognizers.symbol("<").get();
         test(lRecognizer, "<x", MatchResult.MATCH, MatchResult.NOT_A_MATCH);
