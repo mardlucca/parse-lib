@@ -20,63 +20,28 @@ package mardlucca.parselib.parser;
 
 import java.io.BufferedReader;
 import java.io.IOException;
-import java.io.InputStream;
-import java.io.InputStreamReader;
-import java.net.URISyntaxException;
-import java.nio.file.Files;
-import java.nio.file.Paths;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Objects;
-import java.util.Properties;
+import java.io.Reader;
+import java.util.ResourceBundle;
 import java.util.function.Function;
-import java.util.regex.Pattern;
 
+import static java.lang.Character.isUpperCase;
 import static org.apache.commons.lang3.StringUtils.isBlank;
 import static org.apache.commons.lang3.StringUtils.isNotBlank;
 import static org.apache.commons.lang3.StringUtils.isNumeric;
 
 public class LRParsingTableBuilder<T> {
-    private static final Pattern SYMBOL_REGEX =
-        Pattern.compile("[ \\t\\n\\r]+");
+    private static Function<String, String> nonTerminalParser =
+            aInString -> isUpperCase(aInString.charAt(0))
+                    ? aInString : null;
 
-    private static final String ERROR_SUFFIX = "error";
-    private static final String GRAMMAR_SUFFIX = "grammar";
-    private static final String TABLE_SUFFIX = "table";
-    private static final String EPSILON_SYMBOL = "''";
-
-    private String languageName;
-    private Function<String, T> terminalParser;
-    private Function<String, String> nonTerminalParser;
-    private Function<String, Boolean> epsilonParser;
-    protected Grammar grammar;
-
-    public LRParsingTableBuilder(String aInLanguageName,
-                                 Function<String, T> aInTerminalParser,
-                                 Function<String, String> aInNonTerminalParser) {
-        this(aInLanguageName, aInTerminalParser, aInNonTerminalParser, null);
-    }
-
-
-    public LRParsingTableBuilder(String aInLanguageName,
-                                 Function<String, T> aInTerminalParser,
-                                 Function<String, String> aInNonTerminalParser,
-                                 Grammar aInGrammar) {
-        languageName = aInLanguageName;
-        terminalParser = aInTerminalParser;
-        nonTerminalParser = aInNonTerminalParser;
-        epsilonParser = aInString -> Objects.equals(aInString, EPSILON_SYMBOL);
-        grammar = aInGrammar;
-    }
-
-    public LRParsingTable<T> build() {
-        Grammar lGrammar = loadGrammar();
-
-        Properties lErrors = loadErrorFile();
-        LRParsingTable<T> lParsingTable = new LRParsingTable<>(lGrammar);
+    public static <T> LRParsingTable<T> build(
+            Grammar aInGrammar,
+            ResourceBundle aInErrorMessages,
+            Reader aInTableReader,
+            Function<String, T> aInTerminalParser) {
+        LRParsingTable<T> lParsingTable = new LRParsingTable<>(aInGrammar);
         try (BufferedReader lReader = new BufferedReader(
-            new InputStreamReader(getClass().getResourceAsStream(
-                getFile(TABLE_SUFFIX))))) {
+                aInTableReader)) {
             Object[] lSymbols = null;
             boolean[] lIsTerminalFlags = null;
             int lExpectedState = 0;
@@ -93,8 +58,7 @@ public class LRParsingTableBuilder<T> {
                     // the first thing we need to read is the header row
                     if (isNotBlank(lParts[0])) {
                         throw new RuntimeException(
-                            "Could not find header row for table file \"" +
-                                getFile(TABLE_SUFFIX) + "\"");
+                            "Could not find header row for table");
                     }
 
                     // this is the first line of the file, the one defining
@@ -102,7 +66,7 @@ public class LRParsingTableBuilder<T> {
                     lSymbols = new Object[lParts.length - 1];
                     lIsTerminalFlags = new boolean[lParts.length - 1];
                     for (int i = 1; i < lParts.length; i++) {
-                        lSymbols[i - 1] = terminalParser.apply(lParts[i]);
+                        lSymbols[i - 1] = aInTerminalParser.apply(lParts[i]);
                         if (lSymbols[i - 1] != null) {
                             lIsTerminalFlags[i - 1] = true;
                         } else {
@@ -111,9 +75,7 @@ public class LRParsingTableBuilder<T> {
                         }
                         if (lSymbols[i - 1] == null) {
                             throw new RuntimeException("\"" +
-                                lSymbols[i - 1] + "\" in parse table " +
-                                "file \"" + languageName +
-                                ".table\" is not a valid symbol");
+                                lSymbols[i - 1] + "\" is not a valid symbol");
                         }
                     }
                 } else {
@@ -144,7 +106,7 @@ public class LRParsingTableBuilder<T> {
                                                 lParts[i].substring(1)));
                             } else if (lParts[i].charAt(0) == 'e') {
                                 lState = lState.error(lTerminal,
-                                    getError(lErrors, Integer.parseInt(
+                                    getError(aInErrorMessages, Integer.parseInt(
                                         lParts[i].substring(1))));
                             } else if (lParts[i].equals("acc")) {
                                 lState = lState.accept(lTerminal);
@@ -179,98 +141,18 @@ public class LRParsingTableBuilder<T> {
         return lParsingTable;
     }
 
-    private static String getError(Properties aInErrors, int aInErrorNumber) {
-        String lErrorMessage = aInErrors.getProperty(
-            String.valueOf(aInErrorNumber));
+    private static String getError(
+            ResourceBundle aInErrorMessages, int aInErrorNumber) {
+        String lErrorMessage = null;
+        if (aInErrorMessages != null) {
+            lErrorMessage = aInErrorMessages.getString(
+                    String.valueOf(aInErrorNumber));
+        }
+
         if (lErrorMessage == null) {
             throw new RuntimeException("Could not find error message for " +
-                "error code \"" + aInErrorNumber + '"');
+                    "error code \"" + aInErrorNumber + '"');
         }
         return lErrorMessage;
-    }
-
-    private Grammar loadGrammar() {
-        if (grammar != null) {
-            return grammar;
-        }
-
-        try {
-            Grammar lGrammar = new Grammar();
-            Files.lines(Paths.get(this.getClass().getResource(
-                getFile(GRAMMAR_SUFFIX)).toURI())).forEach(aInLine -> {
-                    if (isBlank(aInLine) || aInLine.startsWith("#")) {
-                        return;
-                    }
-
-                    String[] lParts = getSymbols(aInLine);
-                    if (lParts.length < 3) {
-                        throw new RuntimeException("Production with less " +
-                            "than 3 symbols: " + aInLine);
-                    }
-
-                    String lLeftHandSide = nonTerminalParser.apply(lParts[0]);
-                    if (lLeftHandSide == null) {
-                        throw new RuntimeException("Left hand symbol \"" +
-                            lParts[0] + "\" in production \"" + aInLine +
-                            "\" was not recognized as a non-terminal");
-                    }
-
-                    List<Object> lRightHandSide = new ArrayList<>();
-                    for (int i = 2; i < lParts.length; i++) {
-                        Object lSymbol = nonTerminalParser.apply(lParts[i]);
-                        if (lSymbol == null) {
-                            lSymbol = terminalParser.apply(lParts[i]);
-                        }
-                        if (lSymbol == null) {
-                            if (epsilonParser.apply(lParts[i])) {
-                                if (lParts.length != 3) {
-                                    throw new RuntimeException("Epsilon " +
-                                        "symbol must be the only one in " +
-                                        "the right hand side of a " +
-                                        "production: " + aInLine);
-                                }
-
-                                // found epsilon, ignore it
-                                break;
-                            }
-                            throw new RuntimeException("Symbol \"" +
-                                lParts[i] + "\" in production \"" +
-                                aInLine + "\" is not valid");
-                        }
-                        lRightHandSide.add(lSymbol);
-                    }
-
-                    lGrammar.addProduction(
-                            lLeftHandSide,
-                            lRightHandSide.toArray(new Object[0]));
-
-                });
-            return lGrammar;
-        }
-        catch (IOException | URISyntaxException e) {
-            throw new RuntimeException(e);
-        }
-    }
-
-    private Properties loadErrorFile() {
-        Properties lProperties = new Properties();
-        try {
-            InputStream lInputStream = getClass().getResourceAsStream(
-                getFile(ERROR_SUFFIX));
-            if (lInputStream != null) {
-                lProperties.load(lInputStream);
-            }
-        }
-        catch (IOException ignore) {
-        }
-        return lProperties;
-    }
-
-    private String getFile(String aInExtension) {
-        return "/META-INF/" + languageName + '.' + aInExtension;
-    }
-
-    private String[] getSymbols(String aInLine) {
-        return SYMBOL_REGEX.split(aInLine.trim());
     }
 }

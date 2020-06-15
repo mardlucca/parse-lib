@@ -51,23 +51,6 @@ public class LRParsingTable<T> {
         return states.get(aInIndex);
     }
 
-    public LRParsingTable<T> onDefaultReduce(ReduceListener aInListener) {
-        grammar.onDefaultReduce(aInListener);
-        return this;
-    }
-
-    public LRParsingTable<T> onReduce(
-            int aInProduction, ReduceListener aInReduceListener) {
-        grammar.onReduce(aInProduction, aInReduceListener);
-        return this;
-    }
-
-    public LRParsingTable<T> onReduce(
-            String aInProductionString, ReduceListener aInReduceListener) {
-        grammar.onReduce(aInProductionString, aInReduceListener);
-        return this;
-    }
-
     public Parser buildParser(TokenizerFactory<T> aInTokenizerFactory) {
         return aInReader -> {
             Tokenizer<T> lTokenizer =
@@ -125,14 +108,14 @@ public class LRParsingTable<T> {
         }
 
         public State shiftIf(T aInTerminal, T aInLookAhead, int aInState) {
-            Action lPreviousAction = actions.get(aInTerminal);
+            Action lOriginalAction = actions.get(aInTerminal);
 
             actions.put(aInTerminal, new ConditionalAction(
                     aInLookAhead,
                     new ShiftAction(aInState),
-                    lPreviousAction == null
+                    lOriginalAction == null
                             ? defaultErrorAction
-                            : lPreviousAction));
+                            : lOriginalAction));
 
             return this;
         }
@@ -144,14 +127,14 @@ public class LRParsingTable<T> {
         }
 
         public State reduceIf(T aInTerminal, T aInLookAhead, int aInProduction) {
-            Action lPreviousAction = actions.get(aInTerminal);
+            Action lOriginalAction = actions.get(aInTerminal);
 
             actions.put(aInTerminal, new ConditionalAction(
                     aInLookAhead,
                     new ReduceAction(grammar.getProduction(aInProduction)),
-                    lPreviousAction == null
+                    lOriginalAction == null
                             ? defaultErrorAction
-                            : lPreviousAction));
+                            : lOriginalAction));
 
             return this;
         }

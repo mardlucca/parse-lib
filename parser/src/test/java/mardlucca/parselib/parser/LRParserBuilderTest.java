@@ -24,10 +24,12 @@ import org.junit.BeforeClass;
 import org.junit.Test;
 
 import java.io.IOException;
+import java.io.InputStreamReader;
+import java.io.Reader;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.ResourceBundle;
 
-import static java.lang.Character.isUpperCase;
 import static mardlucca.parselib.tokenizer.Recognizers.*;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.fail;
@@ -51,14 +53,16 @@ public class LRParserBuilderTest {
             .recognize(symbol(")", TestToken.CLOSE_PARENTHESIS))
             .endOfFile(TestToken.EOF);
 
+        Grammar lGrammar = loadGrammar("LRParserBuilderTest");
+        lGrammar.onDefaultReduce(new TestParserListener(reducedProductions));
+
         LRParsingTable<TestToken> lParseTable =
-                new LRParsingTableBuilder<>(
-                        "LRParserBuilderTest",
-                        TestToken::parse,
-                        aInString -> isUpperCase(aInString.charAt(0))
-                                ? aInString : null)
-                        .build();
-        lParseTable.onDefaultReduce(new TestParserListener(reducedProductions));
+                LRParsingTableBuilder.build(
+                        lGrammar,
+                        ResourceBundle.getBundle(
+                                "META-INF.LRParserBuilderTest"),
+                        getTableReader("LRParserBuilderTest"),
+                        TestToken::parse);
         parser = lParseTable.buildParser(tokenizerBuilder::build);
     }
 
@@ -85,11 +89,12 @@ public class LRParserBuilderTest {
     @Test
     public void testInvalidGrammar1() {
         try {
-            new LRParsingTableBuilder<>(
-                "invalidGrammar1",
-                TestToken::parse,
-                aInString -> isUpperCase(aInString.charAt(0)) ?
-                    aInString : null).build();
+            LRParsingTableBuilder.build(
+                    loadGrammar("invalidGrammar1"),
+                    null,
+                    getTableReader("invalidGrammar1"),
+                    TestToken::parse);
+
             fail("Should have thrown exception");
         }
         catch (RuntimeException e) {
@@ -101,11 +106,12 @@ public class LRParserBuilderTest {
     @Test
     public void testInvalidGrammar2() {
         try {
-            new LRParsingTableBuilder<>(
-                "invalidGrammar2",
-                TestToken::parse,
-                aInString -> isUpperCase(aInString.charAt(0)) ?
-                    aInString : null).build();
+            LRParsingTableBuilder.build(
+                    loadGrammar("invalidGrammar2"),
+                    null,
+                    getTableReader("invalidGrammar2"),
+                    TestToken::parse);
+
             fail("Should have thrown exception");
         }
         catch (RuntimeException e) {
@@ -118,11 +124,11 @@ public class LRParserBuilderTest {
     @Test
     public void testInvalidGrammar3() {
         try {
-            new LRParsingTableBuilder<>(
-                "invalidGrammar3",
-                TestToken::parse,
-                aInString -> isUpperCase(aInString.charAt(0)) ?
-                    aInString : null).build();
+            LRParsingTableBuilder.build(
+                    loadGrammar("invalidGrammar3"),
+                    null,
+                    getTableReader("invalidGrammar3"),
+                    TestToken::parse);
             fail("Should have thrown exception");
         }
         catch (RuntimeException e) {
@@ -135,11 +141,11 @@ public class LRParserBuilderTest {
     @Test
     public void testInvalidGrammar4() {
         try {
-            new LRParsingTableBuilder<>(
-                "invalidGrammar4",
-                TestToken::parse,
-                aInString -> isUpperCase(aInString.charAt(0)) ?
-                    aInString : null).build();
+            LRParsingTableBuilder.build(
+                    loadGrammar("invalidGrammar4"),
+                    null,
+                    getTableReader("invalidGrammar4"),
+                    TestToken::parse);
             fail("Should have thrown exception");
         }
         catch (RuntimeException e) {
@@ -152,11 +158,11 @@ public class LRParserBuilderTest {
     @Test
     public void testInvalidGrammar5() {
         try {
-            new LRParsingTableBuilder<>(
-                "invalidGrammar5",
-                TestToken::parse,
-                aInString -> isUpperCase(aInString.charAt(0)) ?
-                    aInString : null).build();
+            LRParsingTableBuilder.build(
+                    loadGrammar("invalidGrammar5"),
+                    null,
+                    getTableReader("invalidGrammar5"),
+                    TestToken::parse);
             fail("Should have thrown exception");
         }
         catch (RuntimeException e) {
@@ -168,11 +174,11 @@ public class LRParserBuilderTest {
     @Test
     public void testInvalidTable1() {
         try {
-            new LRParsingTableBuilder<>(
-                "invalidTable1",
-                TestToken::parse,
-                aInString -> isUpperCase(aInString.charAt(0)) ?
-                    aInString : null).build();
+            LRParsingTableBuilder.build(
+                    loadGrammar("invalidTable1"),
+                    null,
+                    getTableReader("invalidTable1"),
+                    TestToken::parse);
             fail("Should have thrown exception");
         }
         catch (RuntimeException e) {
@@ -184,11 +190,11 @@ public class LRParserBuilderTest {
     @Test
     public void testInvalidTable2() {
         try {
-            new LRParsingTableBuilder<>(
-                "invalidTable2",
-                TestToken::parse,
-                aInString -> isUpperCase(aInString.charAt(0)) ?
-                    aInString : null).build();
+            LRParsingTableBuilder.build(
+                    loadGrammar("invalidTable2"),
+                    null,
+                    getTableReader("invalidTable2"),
+                    TestToken::parse);
             fail("Should have thrown exception");
         }
         catch (RuntimeException e) {
@@ -200,11 +206,11 @@ public class LRParserBuilderTest {
     @Test
     public void testInvalidTable3() {
         try {
-            new LRParsingTableBuilder<>(
-                "invalidTable3",
-                TestToken::parse,
-                aInString -> isUpperCase(aInString.charAt(0)) ?
-                    aInString : null).build();
+            LRParsingTableBuilder.build(
+                    loadGrammar("invalidTable3"),
+                    null,
+                    getTableReader("invalidTable3"),
+                    TestToken::parse);
             fail("Should have thrown exception");
         }
         catch (RuntimeException e) {
@@ -216,11 +222,11 @@ public class LRParserBuilderTest {
     @Test
     public void testInvalidTable4() {
         try {
-            new LRParsingTableBuilder<>(
-                "invalidTable4",
-                TestToken::parse,
-                aInString -> isUpperCase(aInString.charAt(0)) ?
-                    aInString : null).build();
+            LRParsingTableBuilder.build(
+                    loadGrammar("invalidTable4"),
+                    null,
+                    getTableReader("invalidTable4"),
+                    TestToken::parse);
             fail("Should have thrown exception");
         }
         catch (RuntimeException e) {
@@ -235,10 +241,10 @@ public class LRParserBuilderTest {
     }
 
     private static void testStringWithError(
-        String aInString,
-        String aInErrorMessage,
-        String ... aInProductions)
-        throws IOException, UnrecognizedCharacterSequenceException {
+            String aInString,
+            String aInErrorMessage,
+            String ... aInProductions)
+            throws IOException, UnrecognizedCharacterSequenceException {
         reducedProductions.clear();
         ParseResult lInvocation = parser.parse(aInString);
 
@@ -251,5 +257,17 @@ public class LRParserBuilderTest {
         for (int i = 0; i < aInProductions.length; i++) {
             assertEquals(aInProductions[i], reducedProductions.get(i));
         }
+    }
+
+    private static Grammar loadGrammar(String aInLanguage) {
+        return GrammarLoader.load(
+                new InputStreamReader(TestToken.class.getResourceAsStream(
+                        "/META-INF/" + aInLanguage + ".grammar")),
+                TestToken::parse);
+    }
+
+    private static Reader getTableReader(String aInLanguage) {
+        return new InputStreamReader(TestToken.class.getResourceAsStream(
+                "/META-INF/" + aInLanguage + ".table"));
     }
 }
