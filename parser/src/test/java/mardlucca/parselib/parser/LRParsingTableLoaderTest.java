@@ -34,7 +34,7 @@ import static mardlucca.parselib.tokenizer.Recognizers.*;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.fail;
 
-public class LRParserBuilderTest {
+public class LRParsingTableLoaderTest {
     private static List<String> reducedProductions = new ArrayList<>();
 
     private static BasicTokenizer.Builder<TestToken> tokenizerBuilder;
@@ -57,7 +57,7 @@ public class LRParserBuilderTest {
         lGrammar.onDefaultReduce(new TestParserListener(reducedProductions));
 
         LRParsingTable<TestToken> lParseTable =
-                LRParsingTableBuilder.build(
+                LRParsingTableLoader.build(
                         lGrammar,
                         ResourceBundle.getBundle(
                                 "META-INF.LRParserBuilderTest"),
@@ -89,7 +89,7 @@ public class LRParserBuilderTest {
     @Test
     public void testInvalidGrammar1() {
         try {
-            LRParsingTableBuilder.build(
+            LRParsingTableLoader.build(
                     loadGrammar("invalidGrammar1"),
                     null,
                     getTableReader("invalidGrammar1"),
@@ -106,7 +106,7 @@ public class LRParserBuilderTest {
     @Test
     public void testInvalidGrammar2() {
         try {
-            LRParsingTableBuilder.build(
+            LRParsingTableLoader.build(
                     loadGrammar("invalidGrammar2"),
                     null,
                     getTableReader("invalidGrammar2"),
@@ -124,7 +124,7 @@ public class LRParserBuilderTest {
     @Test
     public void testInvalidGrammar3() {
         try {
-            LRParsingTableBuilder.build(
+            LRParsingTableLoader.build(
                     loadGrammar("invalidGrammar3"),
                     null,
                     getTableReader("invalidGrammar3"),
@@ -141,7 +141,7 @@ public class LRParserBuilderTest {
     @Test
     public void testInvalidGrammar4() {
         try {
-            LRParsingTableBuilder.build(
+            LRParsingTableLoader.build(
                     loadGrammar("invalidGrammar4"),
                     null,
                     getTableReader("invalidGrammar4"),
@@ -158,7 +158,7 @@ public class LRParserBuilderTest {
     @Test
     public void testInvalidGrammar5() {
         try {
-            LRParsingTableBuilder.build(
+            LRParsingTableLoader.build(
                     loadGrammar("invalidGrammar5"),
                     null,
                     getTableReader("invalidGrammar5"),
@@ -174,7 +174,7 @@ public class LRParserBuilderTest {
     @Test
     public void testInvalidTable1() {
         try {
-            LRParsingTableBuilder.build(
+            LRParsingTableLoader.build(
                     loadGrammar("invalidTable1"),
                     null,
                     getTableReader("invalidTable1"),
@@ -190,7 +190,7 @@ public class LRParserBuilderTest {
     @Test
     public void testInvalidTable2() {
         try {
-            LRParsingTableBuilder.build(
+            LRParsingTableLoader.build(
                     loadGrammar("invalidTable2"),
                     null,
                     getTableReader("invalidTable2"),
@@ -206,7 +206,7 @@ public class LRParserBuilderTest {
     @Test
     public void testInvalidTable3() {
         try {
-            LRParsingTableBuilder.build(
+            LRParsingTableLoader.build(
                     loadGrammar("invalidTable3"),
                     null,
                     getTableReader("invalidTable3"),
@@ -222,7 +222,7 @@ public class LRParserBuilderTest {
     @Test
     public void testInvalidTable4() {
         try {
-            LRParsingTableBuilder.build(
+            LRParsingTableLoader.build(
                     loadGrammar("invalidTable4"),
                     null,
                     getTableReader("invalidTable4"),

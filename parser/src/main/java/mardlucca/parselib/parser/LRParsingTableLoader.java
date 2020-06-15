@@ -29,7 +29,7 @@ import static org.apache.commons.lang3.StringUtils.isBlank;
 import static org.apache.commons.lang3.StringUtils.isNotBlank;
 import static org.apache.commons.lang3.StringUtils.isNumeric;
 
-public class LRParsingTableBuilder<T> {
+public class LRParsingTableLoader {
     private static Function<String, String> nonTerminalParser =
             aInString -> isUpperCase(aInString.charAt(0))
                     ? aInString : null;
