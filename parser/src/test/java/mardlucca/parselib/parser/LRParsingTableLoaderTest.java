@@ -44,14 +44,15 @@ public class LRParsingTableLoaderTest {
     @BeforeClass
     public static void beforeClass() {
         tokenizerBuilder = new BasicTokenizer.Builder<TestToken>()
-            .recognize(identifiers(TestToken.IDENTIFIER))
-            .recognize(numbers(TestToken.NUMBER))
-            .recognize(symbol("+", TestToken.PLUS))
-            .recognize(symbol("*", TestToken.STAR))
-            .recognize(symbol(".", TestToken.PERIOD))
-            .recognize(symbol("(", TestToken.OPEN_PARENTHESIS))
-            .recognize(symbol(")", TestToken.CLOSE_PARENTHESIS))
-            .endOfFile(TestToken.EOF);
+                .recognize(whiteSpaces())
+                .recognize(identifiers(TestToken.IDENTIFIER))
+                .recognize(numbers(TestToken.NUMBER))
+                .recognize(symbol("+", TestToken.PLUS))
+                .recognize(symbol("*", TestToken.STAR))
+                .recognize(symbol(".", TestToken.PERIOD))
+                .recognize(symbol("(", TestToken.OPEN_PARENTHESIS))
+                .recognize(symbol(")", TestToken.CLOSE_PARENTHESIS))
+                .endOfFile(TestToken.EOF);
 
         Grammar lGrammar = loadGrammar("LRParserBuilderTest");
         lGrammar.onDefaultReduce(new TestParserListener(reducedProductions));

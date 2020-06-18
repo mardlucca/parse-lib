@@ -34,7 +34,8 @@ public enum TestToken
     PLUS("+"),
     STAR("*"),
     STRING("str"),
-    SLASH("/");
+    SLASH("/"),
+    WHITESPACE("\\s");
 
     TestToken(String aInDisplay)
     {

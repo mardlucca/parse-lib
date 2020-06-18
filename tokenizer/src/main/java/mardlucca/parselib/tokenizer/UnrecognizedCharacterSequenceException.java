@@ -35,8 +35,4 @@ public class UnrecognizedCharacterSequenceException extends Exception {
             ? "Unrecognized character sequence: " + sequence
             : detail + ": " + sequence;
     }
-
-    public String getSequence() {
-        return sequence;
-    }
 }

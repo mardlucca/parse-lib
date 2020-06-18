@@ -76,7 +76,7 @@ public class MultiLineCommentRecognizer<T>
         if (aInChar == -1) {
             setFailureReason("Unclosed comment");
             state = State.FINISHED;
-            return MatchResult.NOT_A_MATCH;
+            return MatchResult.FAILURE;
         }
 
         if (substring.length() == endCharSequence.length()) {

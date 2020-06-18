@@ -25,7 +25,7 @@ public class TransformingRecognizer<T, VF, VT>
     private TokenRecognizer<T, VF> delegate;
     private Function<? super VF, ? extends VT> transform;
 
-    public TransformingRecognizer(
+    TransformingRecognizer(
             TokenRecognizer<T, VF> aInDelegate,
             Function<? super VF, ? extends VT> aInTransform) {
         delegate = aInDelegate;
@@ -45,10 +45,13 @@ public class TransformingRecognizer<T, VF, VT>
     @Override
     public Token<T, VT> getToken(String aInCharSequence) {
         Token<T, VF> lToken = delegate.getToken(aInCharSequence);
+        VF lValue = lToken.getValue();
         return new Token<>(
                 lToken.getId(),
                 aInCharSequence,
-                transform.apply(lToken.getValue()));
+                lValue == null
+                        ? null
+                        : transform.apply(lValue));
     }
 
     @Override

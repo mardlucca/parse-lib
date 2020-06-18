@@ -18,24 +18,19 @@
 
 package mardlucca.parselib.tokenizer;
 
+import java.util.function.Function;
+import java.util.function.Predicate;
 import java.util.function.Supplier;
 
 public class Recognizers {
-    public static <T> Supplier<CharacterLiteralRecognizer<T>> characters(
+    public static <T> Supplier<BooleanLiteralRecognizer<T>> booleans(
             T aInToken) {
-        return () -> new CharacterLiteralRecognizer<>(aInToken);
+        return () -> new BooleanLiteralRecognizer<>(aInToken);
     }
 
     public static <T> Supplier<CharacterLiteralRecognizer<T>> characters(
-            char aInEscapeCharacter,
-            char aInDelimiterCharacter,
-            char[] aInEscapeSequences,
             T aInToken) {
-        return () -> new CharacterLiteralRecognizer<>(
-                aInEscapeCharacter,
-                aInDelimiterCharacter,
-                aInEscapeSequences,
-                aInToken);
+        return () -> new CharacterLiteralRecognizer<>(aInToken);
     }
 
     public static <T> Supplier<IdentifierRecognizer<T>> identifiers(
@@ -45,7 +40,7 @@ public class Recognizers {
 
     public static <T>
     Supplier<MultiLineCommentRecognizer<T>> multiLineComments() {
-        return () -> new MultiLineCommentRecognizer<>(null, null);
+        return multiLineComments(null, null);
     }
 
     public static <T> Supplier<MultiLineCommentRecognizer<T>> multiLineComments(
@@ -62,7 +57,7 @@ public class Recognizers {
 
     public static <T>
     Supplier<SingleLineCommentRecognizer<T>> singleLineComments() {
-        return () -> new SingleLineCommentRecognizer<>(null);
+        return singleLineComments(null);
     }
 
     public static <T>
@@ -104,5 +99,21 @@ public class Recognizers {
 
     public static <T> Supplier<WhitespaceRecognizer<T>> whiteSpaces() {
         return WhitespaceRecognizer::new;
+    }
+
+    public static <T, VF, VT>
+    Supplier<TokenRecognizer<T, VT>> transforming(
+            Supplier<? extends TokenRecognizer<T, VF>> aInFromSupplier,
+            Function<? super VF, ? extends VT> aInTransformation) {
+        return () -> new TransformingRecognizer<>(
+                aInFromSupplier.get(), aInTransformation);
+    }
+
+    public static <T, V>
+    Supplier<TokenRecognizer<T, V>> conditional(
+            Supplier<? extends TokenRecognizer<T, V>> aInFromSupplier,
+            Predicate<Object> aInCondition) {
+        return () -> new ConditionalRecognizer<>(
+                aInFromSupplier.get(), aInCondition);
     }
 }

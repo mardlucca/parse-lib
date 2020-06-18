@@ -40,10 +40,11 @@ public class LRParserTest {
     @BeforeClass
     public static void beforeClass() {
         builder = new BasicTokenizer.Builder<TestToken>()
-            .recognize(identifiers(TestToken.IDENTIFIER))
-            .recognize(numbers(TestToken.NUMBER))
-            .recognize(symbol("=", TestToken.ASSIGNMENT))
-            .endOfFile(TestToken.EOF);
+                .recognize(whiteSpaces())
+                .recognize(identifiers(TestToken.IDENTIFIER))
+                .recognize(numbers(TestToken.NUMBER))
+                .recognize(symbol("=", TestToken.ASSIGNMENT))
+                .endOfFile(TestToken.EOF);
     }
 
     @Before

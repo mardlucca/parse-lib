@@ -27,7 +27,6 @@ import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Objects;
-import java.util.function.Function;
 import java.util.function.Supplier;
 import java.util.stream.Collectors;
 
@@ -101,6 +100,12 @@ public class BasicTokenizer<T> implements Tokenizer<T> {
                 TokenRecognizer<T, ?> lRecognizer = lIterator.next();
                 MatchResult lMatchResult = lRecognizer.test(
                         lCurrentCharacter, aInSyntacticContext);
+                if (lMatchResult == MatchResult.FAILURE) {
+                    // stop immediately
+                    throw new UnrecognizedCharacterSequenceException(
+                            toString(charactersRead, charactersRead.size()),
+                            lRecognizer.getFailureReason());
+                }
                 if (lMatchResult == MatchResult.NOT_A_MATCH) {
                     // discard recognizer as we know it will not match the final
                     // string
@@ -179,6 +184,10 @@ public class BasicTokenizer<T> implements Tokenizer<T> {
     public static String toString(
             List<Integer> aInCharactersRead,
             int aInLength) {
+        if (aInCharactersRead.get(aInLength - 1) == -1) {
+            // last character is EOF. Remove from String.
+            aInLength--;
+        }
         char[] lChars = new char[aInLength];
         for (int i = 0; i < aInLength; i++) {
             lChars[i] = (char) aInCharactersRead.get(i).intValue();
@@ -206,22 +215,12 @@ public class BasicTokenizer<T> implements Tokenizer<T> {
             return this;
         }
 
-        public <V> Builder<T> recognize(
-                Supplier<? extends TokenRecognizer<T, V>> aInRecognizerSupplier,
-                Function<? super V, ?> aInTransform) {
-            return recognize(
-                    () -> new TransformingRecognizer<>(
-                            aInRecognizerSupplier.get(),
-                            aInTransform));
-        }
-
         public BasicTokenizer<T> build(Reader aInReader) {
             if (endOfFile == null) {
                 throw new RuntimeException(
                     "End of file token must be specified");
             }
 
-            custom.add(WhitespaceRecognizer::new);
             List<TokenRecognizer<T, ?>> lRecognizers =
                     custom.stream().map(Supplier::get)
                             .collect(Collectors.toList());

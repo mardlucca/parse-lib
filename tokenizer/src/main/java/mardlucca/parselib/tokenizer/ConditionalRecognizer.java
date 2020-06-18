@@ -1,5 +1,5 @@
 /*
- * File: WhitespaceRecognizer.java
+ * File: ConditionalRecognizer.java
  *
  * Copyright 2020 Marcio D. Lucca
  *
@@ -18,48 +18,44 @@
 
 package mardlucca.parselib.tokenizer;
 
-public class WhitespaceRecognizer<T> extends BaseTokenRecognizer<T, String> {
-    private boolean reading = true;
-    private boolean ignore;
+import java.util.function.Predicate;
 
-    public WhitespaceRecognizer() {
-        this(null, true);
-    }
+public class ConditionalRecognizer<T, V>
+        implements TokenRecognizer<T, V> {
+    private TokenRecognizer<T, V> delegate;
+    private Predicate<Object> predicate;
 
-    public WhitespaceRecognizer(T aInToken, boolean aInIgnore) {
-        super(aInToken);
-        ignore = aInIgnore;
+    ConditionalRecognizer(TokenRecognizer<T, V> aInDelegate,
+                          Predicate<Object> aInPredicate) {
+        delegate = aInDelegate;
+        predicate = aInPredicate;
     }
 
     @Override
     public MatchResult test(int aInChar, Object aInSyntacticContext) {
-        if (!reading) {
+        if (!predicate.test(aInSyntacticContext)) {
             return MatchResult.NOT_A_MATCH;
         }
+        return delegate.test(aInChar, aInSyntacticContext);
+    }
 
-        if (aInChar == '\n'
-            || aInChar == '\t'
-            || aInChar == ' ') {
-            return MatchResult.MATCH;
-        }
-
-        reading = false;
-        return MatchResult.NOT_A_MATCH;
+    @Override
+    public Token<T, V> getToken(String aInCharSequence) {
+        return delegate.getToken(aInCharSequence);
     }
 
     @Override
     public void reset() {
-        super.reset();
-        reading = true;
+        delegate.reset();
     }
 
     @Override
-    public String getValue(String aInCharSequence) {
-        return aInCharSequence;
+    public String getFailureReason() {
+        return delegate.getFailureReason();
     }
 
     @Override
     public boolean isIgnored() {
-        return ignore;
+        return delegate.isIgnored();
     }
 }

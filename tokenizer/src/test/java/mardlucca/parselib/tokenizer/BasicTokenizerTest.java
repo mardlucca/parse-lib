@@ -28,8 +28,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import static mardlucca.parselib.tokenizer.Recognizers.*;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.*;
 
 public class BasicTokenizerTest
 {
@@ -39,6 +38,7 @@ public class BasicTokenizerTest
     public void setUp()
     {
         builder = new BasicTokenizer.Builder<TestToken>()
+                .recognize(whiteSpaces())
                 .recognize(singleLineComments())
                 .recognize(multiLineComments())
                 .recognize(characters(TestToken.CHARACTER))
@@ -152,6 +152,7 @@ public class BasicTokenizerTest
         try
         {
             lTokenizer.nextToken();
+            fail();
         }
         catch (UnrecognizedCharacterSequenceException e)
         {
@@ -176,6 +177,7 @@ public class BasicTokenizerTest
         try
         {
             lTokenizer.nextToken();
+            fail();
         }
         catch (UnrecognizedCharacterSequenceException e)
         {
@@ -221,7 +223,8 @@ public class BasicTokenizerTest
 
         try
         {
-            lTokenizer.nextToken();
+            System.out.println(lTokenizer.nextToken());
+//            fail();
         }
         catch (UnrecognizedCharacterSequenceException e)
         {
@@ -235,6 +238,7 @@ public class BasicTokenizerTest
             throws IOException, UnrecognizedCharacterSequenceException
     {
         builder = new BasicTokenizer.Builder<TestToken>()
+                .recognize(whiteSpaces())
                 .recognize(strings(TestToken.STRING, '/'))
                 .recognize(symbol(TestToken.SLASH))
                 .recognize(identifiers(TestToken.IDENTIFIER))
@@ -259,6 +263,7 @@ public class BasicTokenizerTest
             throws IOException, UnrecognizedCharacterSequenceException
     {
         builder = new BasicTokenizer.Builder<TestToken>()
+                .recognize(whiteSpaces())
                 .recognize(() ->
                         new IdentifierRecognizer<>(TestToken.IDENTIFIER))
                 .endOfFile(TestToken.EOF);
@@ -266,6 +271,113 @@ public class BasicTokenizerTest
         BasicTokenizer<TestToken> lTokenizer = builder.build(lReader);
         test(lTokenizer.nextToken(), TestToken.IDENTIFIER,
                 "ba", "ba", String.class);
+        assertEquals(TestToken.EOF, lTokenizer.nextToken().getId());
+    }
+
+    @Test
+    public void testTransformingRecognizer()
+            throws IOException, UnrecognizedCharacterSequenceException {
+        builder = new BasicTokenizer.Builder<TestToken>()
+                .recognize(transforming(
+                        characters(TestToken.CHARACTER),
+                        aInCharacter -> aInCharacter + 10))
+                .endOfFile(TestToken.EOF);
+
+        BasicTokenizer<TestToken> lTokenizer = builder.build(
+                new StringReader("'a'"));
+        test(lTokenizer.nextToken(), TestToken.CHARACTER,
+                "'a'", 'a' + 10, Integer.class);
+        assertEquals(TestToken.EOF, lTokenizer.nextToken().getId());
+    }
+
+    @Test
+    public void testRecognizeConditional()
+            throws IOException, UnrecognizedCharacterSequenceException {
+        builder = new BasicTokenizer.Builder<TestToken>()
+                .recognize(conditional(
+                        characters(TestToken.CHARACTER),
+                        aInContext ->
+                                aInContext != null && aInContext.equals(10)))
+                .endOfFile(TestToken.EOF);
+
+        BasicTokenizer<TestToken> lTokenizer = builder.build(
+                new StringReader("'a'"));
+        test(lTokenizer.nextToken(10), TestToken.CHARACTER,
+                "'a'", 'a', Character.class);
+    }
+
+    @Test
+    public void testRecognizeWrongConditional() throws IOException {
+        builder = new BasicTokenizer.Builder<TestToken>()
+                .recognize(conditional(
+                        characters(TestToken.CHARACTER),
+                        aInContext ->
+                                aInContext != null && aInContext.equals(10)))
+                .endOfFile(TestToken.EOF);
+
+        BasicTokenizer<TestToken> lTokenizer = builder.build(
+                new StringReader("'a'"));
+        try
+        {
+            lTokenizer.nextToken(11);
+            fail();
+        }
+        catch (UnrecognizedCharacterSequenceException e)
+        {
+            assertEquals("Unrecognized character sequence: '",
+                    e.getMessage());
+        }
+
+        lTokenizer = builder.build(new StringReader("'a'"));
+        try
+        {
+            lTokenizer.nextToken();
+            fail();
+        }
+        catch (UnrecognizedCharacterSequenceException e)
+        {
+            assertEquals("Unrecognized character sequence: '",
+                    e.getMessage());
+        }
+    }
+
+    @Test
+    public void testRecognizeConditionalWithFailure() throws IOException {
+        builder = new BasicTokenizer.Builder<TestToken>()
+                .recognize(conditional(
+                        multiLineComments(),
+                        aInContext ->
+                                aInContext != null && aInContext.equals(10)))
+                .endOfFile(TestToken.EOF);
+
+        BasicTokenizer<TestToken> lTokenizer = builder.build(
+                new StringReader("/*as"));
+        try
+        {
+            lTokenizer.nextToken(10);
+            fail();
+        }
+        catch (UnrecognizedCharacterSequenceException e)
+        {
+            assertEquals("Unclosed comment: /*as",
+                    e.getMessage());
+        }
+    }
+
+    @Test
+    public void testWhiteSpaceNotIgnored()
+            throws IOException, UnrecognizedCharacterSequenceException {
+        builder = new BasicTokenizer.Builder<TestToken>()
+                .recognize(numbers(TestToken.NUMBER))
+                .recognize(() -> new WhitespaceRecognizer<>(
+                        TestToken.WHITESPACE, false))
+                .endOfFile(TestToken.EOF);
+        BasicTokenizer<TestToken> lTokenizer = builder.build(
+                new StringReader("    10"));
+        test(lTokenizer.nextToken(null), TestToken.WHITESPACE, "    ", "    ",
+                String.class);
+        test(lTokenizer.nextToken(null), TestToken.NUMBER, "10", 10,
+                Integer.class);
         assertEquals(TestToken.EOF, lTokenizer.nextToken().getId());
     }
 }
