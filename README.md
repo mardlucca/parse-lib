@@ -1,5 +1,4 @@
-# template-project
-This is a template/skeleton project to be used a starting point to create basic Java projects using Gradle.
+# parse-lib
+This multi-library project includes a library for tokenizing strings and one for parsing strings.
 
-This project includes:
-* TODO: Add description 
+While there are libraries out there that do pretty much the same thing, I felt I wanted to write libraries of my own for this. Tokenizing is a relatively simple problem, so no big deal. When it comes to parsing, especifically LR parsers, the complicated part is writing code to produce the different types of LR tables (e.g. SLR, LALR, etc). Once the parsing table is created, going through the table given a series of tokens is not that complicated, in fact one can easily find the algorithm in books and/or online resources. That being said, this parsing library does just that, it skips the steps required to produce a parsing table and it simply uses a parsing table produced elsewhere (e.g. http://jsmachines.sourceforge.net/machines/lalr1.html). Callers can then feed the table a series of tokens and a listener to be invoked as parsing takes place.
